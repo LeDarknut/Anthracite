@@ -1,0 +1,139 @@
+<link:kernel32.lib>
+
+FILE {
+
+	#r : 0x80000000;
+	#w : 0x40000000;
+	#x : 0x20000000;
+
+	$p :
+	&0->QWORD(0);
+	&0->QWORD(0);
+	$cursor :
+	&0->QWORD(0);
+	&0->QWORD(0);
+
+	NEW(|$handle, &d? : &0) ? &d {
+	
+		&d->QWORD(0);
+	
+	}
+
+	OPEN(%handle|$handle, #name, #mode ?: #[OR: #r, #w], &c ?: &4, &d ?: &0) ? &c {
+	
+		$name : 
+		&d->STRING(#[APPEND:#name, 0]);
+
+		.FILE.OPEN(%handle|$handle, $name, #mode, &c);
+
+	}
+
+	OPEN(%handle|$handle, %name|$name, #mode ?: #[OR: #r, #w], &c ?: &4) ? &c {
+	
+		&c->MOV_Q(%11, %name);
+		&c->LEA(%11, $name);
+		&c->MOV_D(%12, #mode);
+		&c->MOV_D(%0, 1);
+		&c->MOV_D(%1, 0);
+
+		&c->PUSH_Q(0);
+		&c->PUSH_Q(0);
+		&c->PUSH_Q(3);
+
+		&c->STACK_GROW(32);
+
+		&c->CALL($['CreateFileA']);
+
+		&c->MOV_Q(%handle|$handle, %10);
+
+		&c->STACK_SHRINK(56);
+
+	}
+
+	SIZE(%handle|$handle, %size|$size, &c ?: &4) ? &c {
+	
+		&c->MOV_Q(%11, %handle|$handle);
+		&c->MOV_D(%12, 0);
+
+		&c->STACK_GROW(32);
+
+		&c->CALL($['GetFileSize']);
+
+		&c->MOV_D(%size|$size, %10);
+
+		&c->STACK_SHRINK(32);
+
+	}
+
+	READ(%handle|$handle, %buffer|$buffer, %cursor|$cursor|#cursor, %size|$size|#size, &c ?: &4) ? &c {
+
+		&c->MOV_Q(%11, %handle|$handle);
+		&c->MOV_Q(%12, %buffer|$buffer);
+		&c->MOV_D(%0, %size|$size|#size);
+		&c->MOV_D(%1, 0);
+
+		&c->MOV_Q(%10, %cursor|$cursor|#cursor);
+		&c->MOV_Q(.FILE->$cursor, %10);
+		&c->LEA(%10, .FILE->$p);
+
+		&c->PUSH_Q(%10);
+
+		&c->STACK_GROW(32);
+
+		&c->CALL($['ReadFile']);
+
+		&c->STACK_SHRINK(32);
+
+	}
+
+	WRITE(%handle|$handle, %buffer|$buffer, %cursor|$cursor|#cursor, %size|$size|#size, &c ?: &4) ? &c {
+
+		&c->MOV_Q(%11, %handle|$handle);
+		&c->MOV_Q(%12, %buffer|$buffer);
+		&c->MOV_D(%0, %size|$size|#size);
+		&c->MOV_D(%1, 0);
+
+		&c->MOV_Q(%10, %cursor|$cursor|#cursor);
+		&c->MOV_Q(.FILE->$cursor, %10);
+		&c->LEA(%10, .FILE->$p);
+
+		&c->PUSH_Q(%10);
+
+		&c->STACK_GROW(32);
+
+		&c->CALL($['WriteFile']);
+
+		&c->STACK_SHRINK(32);
+
+	}
+
+	APPEND(%handle|$handle, %buffer|$buffer, %size|$size|#size, &c ?: &4) ? &c {
+
+		&c->MOV_Q(%11, %handle|$handle);
+		&c->MOV_Q(%12, %buffer|$buffer);
+		&c->MOV_D(%0, %size|$size|#size);
+		&c->MOV_D(%1, 0);
+
+		&c->PUSH_Q(0);
+
+		&c->STACK_GROW(32);
+
+		&c->CALL($['WriteFile']);
+
+		&c->STACK_SHRINK(32);
+
+	}
+
+	CLOSE(%handle|$handle, &c ?: &4) ? &c {
+
+		&c->MOV_D(%11, %handle|$handle);
+
+		&c->STACK_GROW(32);
+
+		&c->CALL($['CloseHandle']);
+
+		&c->STACK_SHRINK(32);
+
+	}
+
+}

@@ -1,0 +1,47 @@
+<proc>
+<data>
+<control>
+<arithmetic>
+<logic>
+<move>
+<print>
+<time>
+
+$p_t : TIME.NEW();
+$c_t : TIME.NEW();
+
+[QWORD] $duration : $duration->NEW(0);
+
+[DWORD] $oc_cur : $ic_cur->NEW(0);
+[DWORD] $oc_max : $ic_max->NEW(10);
+
+[DWORD] $ic_cur : $ic_cur->NEW(0);
+[DWORD] $ic_max : $ic_max->NEW(0xFFFFF);
+
+PROC.START();
+
+$oc_start :
+
+    $ic_cur->MOV(0);
+
+    TIME.UPDATE($p_t);
+
+    $ic_start :
+
+        $ic_cur->ADD(1);
+        $ic_cur->CMP($ic_max);
+        JUMP_IF_B($ic_start);
+
+    TIME.UPDATE($c_t);
+
+    TIME.DURATION($duration, $p_t, $c_t);
+
+    $duration->DIV(1000);
+
+    $duration->PRINT_LN();
+
+    $oc_cur->ADD(1);
+    $oc_cur->CMP($oc_max);
+    JUMP_IF_B($oc_start);
+
+PROC.EXIT();

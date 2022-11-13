@@ -1,0 +1,81 @@
+<link:kernel32.lib>
+
+DATE {
+
+	NEW(|$s, &d? : &0) ? &d {
+
+		&d->WORD(0);
+		&d->WORD(0);
+		&d->WORD(0);
+		&d->WORD(0);
+		&d->WORD(0);
+		&d->WORD(0);
+		&d->WORD(0);
+		&d->WORD(0);
+
+	}
+
+	$d : NEW();
+
+	UPDATE($t? :$d, &c? : &4) ? &c {
+	
+		&c->LEA(%11, $t);
+
+		&c->STACK_ENTER();
+		&c->STACK_GROW(32);
+
+		&c->CALL($['GetSystemTime']);
+
+		&c->STACK_LEAVE();
+	
+	}
+
+}
+
+TIME {
+
+	NEW(|$s, &d? : &0) ? &d {
+
+        &d->QWORD(0);
+
+    }
+
+	$t : NEW();
+
+	UPDATE($t? :$t, &c? : &4) ? &c {
+	
+		&c->LEA(%11, $t);
+
+		&c->STACK_ENTER();
+		&c->STACK_GROW(32);
+
+		&c->CALL($['GetSystemTimePreciseAsFileTime']);
+
+		&c->STACK_LEAVE();
+	
+	}
+
+	DURATION(%t|$t, %p|$p, %c|$c, @use? : (%a? : %10, |%b, |%c, |%d), &c? : &4) ? &c {
+	
+		IF($t:$t, %p:%p|$p:$p, %c:%c|$c:$c, @use:@use, &c:&c) {
+		
+			&c->MOV_Q(%use.a, %c);
+			&c->MOV_Q(%use.a, $c);
+			&c->SUB_Q(%use.a, %p);
+			&c->SUB_Q(%use.a, $p);
+			&c->MOV_Q($t, %use.a);
+		
+		}
+
+		IF(%t:%t, %p:%p|$p:$p, %c:%c|$c:$c, @use:@use, &c:&c) {
+
+			&c->MOV_Q(%t, %c);
+			&c->MOV_Q(%t, $c);
+			&c->SUB_Q(%t, %p);
+			&c->SUB_Q(%t, $p);
+
+		}
+	
+	}
+
+}

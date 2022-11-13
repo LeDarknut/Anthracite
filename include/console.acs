@@ -1,0 +1,70 @@
+<link:kernel32.lib>
+
+CONSOLE {
+
+	$handle : &0->QWORD(0);
+
+	INIT {
+
+		&2->MOV_D(%11, -11);
+		&2->CALL($['GetStdHandle']);
+		&2->MOV_Q(.CONSOLE->$handle, %10);
+
+	}
+
+	$ln : &0->STRING("\n");
+
+	WRITE_LN(&c ?: &4) ? &c {
+
+		.CONSOLE.WRITE(.CONSOLE->$ln, 1, &c);
+	
+	}
+
+	WRITE(#text, &c ?: &4, &d ?: &0) ? &c {
+
+		$text : 
+		&d->STRING(#text);
+
+		&c->LEA(%12, $text);
+		&c->MOV_Q(%0, #[SIZE:#text]);
+
+		.CONSOLE.WRITE(%12, %0, &c);
+	
+	}
+
+	WRITE(%text|$text, &c ?: &4) ? &c {
+
+		&c->MOV_Q(%12, %text);
+		&c->LEA(%12, $text);
+
+		&c->MOV_D(%0, -1);
+
+		$char_loop:
+
+		&c->ADD_D(%0, 1);		
+		&c->CMP_B($[ABS:%12, %0 * 1], 0);
+		&c->CJMP_NE($char_loop);
+
+		.CONSOLE.WRITE(%12, %0, &c);
+	
+	}
+
+	WRITE(%text|$text, %size|#size|$size, &c ?: &4) ? &c {
+
+		&c->MOV_Q(%12, %text);
+		&c->LEA(%12, $text);
+
+		&c->MOV_Q(%0, %size|$size|#size);
+
+		&c->MOV_Q(%11, .CONSOLE->$handle);
+		&c->MOV_D(%1, 0);
+
+		&c->STACK_GROW(32);
+
+		&c->CALL($['WriteConsoleA']);
+		
+		&c->STACK_SHRINK(32);
+	
+	}
+
+}

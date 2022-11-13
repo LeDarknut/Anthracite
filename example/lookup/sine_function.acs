@@ -1,0 +1,37 @@
+<proc>
+<data>
+<control>
+<arithmetic>
+<logic>
+<move>
+<print>
+<lookup>
+
+$sin_table : &0->FILE("sin.lkt");
+@sin_table : ($table : $sin_table, #shift : 8);
+
+[QWORD] $loop_cur : $loop_cur->NEW(0);
+[QWORD] $loop_max : $loop_max->NEW(0x40);
+
+[SWORD] %sin : %6;
+[WORD] %v : %7;
+
+#val : 33;
+
+PROC.START();
+
+$loop_start :
+
+    %v->MOV($loop_cur);
+
+    %v->SHL(8);
+
+    %sin->LOOKUP(%v, @sin_table);
+
+    %sin->PRINT_LN(14);
+
+    $loop_cur->ADD(1);
+    $loop_cur->CMP($loop_max);
+    JUMP_IF_BE($loop_start);
+
+PROC.EXIT();

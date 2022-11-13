@@ -1,0 +1,573 @@
+<proc>
+<data>
+<stack>
+<control>
+<arithmetic>
+<logic>
+<move>
+<file>
+<memory>
+<time>
+<print>
+
+#max_omitted_letters : 1;
+
+[.TIME ] $p_t      : $p_t->NEW();
+[.TIME ] $c_t      : $c_t->NEW();
+[.QWORD] $duration : $duration->NEW();
+
+.PROC.START();
+
+WORDS {
+
+	/*
+		This array will be allocated during LOAD_WORDS
+
+		$first : will contain the address of the first word
+		$size  : will contain ($end - $first)
+		$end   : will contain the address of the (last + 1) word
+	*/
+
+	[.QWORD] $first : $first->NEW();
+	[.QWORD] $size  : $size->NEW();
+	[.QWORD] $end   : $end->NEW();
+
+}
+
+@words : (
+	[.QWORD] $first : WORDS->$first,
+	[.QWORD] $size  : WORDS->$size,
+	[.QWORD] $end   : WORDS->$end
+);
+
+CHARS {
+
+	/*
+		This array is pre-allocated for LOAD_CHARS
+
+		$max : will contain the maximum char value
+		$first : contains the address of the first char
+		$end   : contains the address of the (last + 1) char
+	*/
+
+	$a : &0->SPACE(104);
+	$b : &0->SPACE(256);
+	$c : &0->NOP();
+
+	[.QWORD] $freq  : $freq->NEW();
+	[.QWORD] $first : $first->NEW();
+	[.QWORD] $end   : $end->NEW();
+
+	$freq->LEA($a, &3);
+	$first->LEA($b, &3);
+	$end->LEA($c, &3);
+
+}
+
+@chars : (
+	[.QWORD] $freq  : CHARS->$freq,
+	[.QWORD] $first : CHARS->$first,
+	[.QWORD] $end   : CHARS->$end
+);
+
+INDEX {
+
+	/*
+		This index-array will be allocated during CREATE_INDEX
+
+		$first : will contain the address of the first element of the indices' first element list
+		$end   : will contain the address of the first element of the indices' (last + 1) element list
+	*/
+
+	[.QWORD] $first : $first->NEW();
+	[.QWORD] $end   : $end->NEW();
+
+}
+
+@index : (
+	[.QWORD] $first : INDEX->$first,
+	[.QWORD] $end   : INDEX->$end
+);
+
+FOUND {
+
+	/*
+		This array will be allocated during CREATE_FOUND
+
+		$first : will contain the address of the first found
+		$size  : will contain ($end - $first)
+		$end   : will contain the address of the (last + 1) found
+	*/
+
+	[.QWORD] $first : $first->NEW();
+	[.QWORD] $size  : $size->NEW();
+	[.QWORD] $end   : $end->NEW();
+	[.DWORD] $count : $count->NEW(0);
+
+}
+
+@found : (
+	[.QWORD] $first : FOUND->$first,
+	[.QWORD] $size  : FOUND->$size,
+	[.QWORD] $end   : FOUND->$end,
+	[.DWORD] $count : FOUND->$count
+);
+
+$p_t->UPDATE();
+
+LOAD_WORDS(@words:@words) {
+
+	[.FILE ] $file           : $file->NEW();
+
+	[.QWORD] %words_end      : %0;
+
+	[.BYTE ] $words_end_char : $[ABS:%words_end, -1];
+
+		$file->OPEN("words.txt");
+
+		$file->SIZE($words.size);
+		$words.size->ADD(1);
+
+		.MEMORY.ALLOC($words.first, $words.size);
+		%words_end->MOV($words.first);
+		%words_end->ADD($words.size);
+		$words.end->MOV(%words_end);
+		$words_end_char->MOV(0);
+
+		$file->READ($words.first, 0, $words.size);
+		$file->CLOSE();
+
+}
+
+LOAD_CHARS(@words:@words, @chars:@chars) {
+
+	[.QWORD] %words_iter 	   : %0;
+	[.QWORD] %chars_freq 	   : %1;
+	[.QWORD] %char 			   : %2;
+	[.QWORD] %chars_iter 	   : %3;
+	[.BYTE ] %rank 			   : %4;
+	[.DWORD] %max 			   : %5;
+	[.DWORD] %max_char 		   : %6;
+
+	[.BYTE ] $words_iter_char  : $[ABS:%words_iter];
+	[.DWORD] $chars_freq_char  : $[ABS:%chars_freq, %char*4];
+	[.DWORD] $chars_freq_mchar : $[ABS:%chars_freq, %max_char*4];
+	[.BYTE ] $chars_iter_mchar : $[ABS:%chars_iter, %max_char];
+
+		%chars_freq->MOV($chars.freq);
+		%words_iter->MOV($words.first);
+		%chars_iter->MOV($chars.first);
+		%chars_iter->ADD(97);
+		%rank->MOV(26);
+
+	$start :
+
+		%words_iter->CMP($words.end);
+		.JUMP_IF_GE($rank);
+
+		%char->MOVX_B($words_iter_char);
+		%char->SUB(97);
+		.JUMP_IF_L($zero);
+
+		%char->CMP(26);
+		.JUMP_IF_GE($zero);
+
+		$chars_freq_char->ADD(1);
+		%words_iter->ADD(1);
+
+		.JUMP($start);
+
+	$zero :
+
+		$words_iter_char->MOV(0);
+	
+		%words_iter->ADD(1);
+		.JUMP($start);
+
+	$rank :
+
+		%max->MOV(0);
+		%max_char->MOV(0);
+		%char->MOV(0);
+
+	$compare :
+
+		%char->CMP(26);
+		.JUMP_IF_GE($save);
+
+		%max->CMP($chars_freq_char);
+		.JUMP_IF_L($replace);
+
+		%char->ADD(1);
+
+		.JUMP($compare);
+
+	$replace :
+
+		%max->MOV($chars_freq_char);
+		%max_char->MOV(%char);
+
+		%char->ADD(1);
+
+		.JUMP($compare);
+
+	$save :
+
+		$chars_iter_mchar->MOV(%rank);
+		$chars_freq_mchar->MOV(0xFFFFFFFF);
+		%rank->SUB(1);
+		%rank->CMP(1);
+		.JUMP_IF_L($finish);
+
+		.JUMP($rank);
+
+	$finish :
+
+		.NOP();
+
+}
+
+CREATE_INDEX(@words:@words, @chars:@chars, @index:@index) {
+
+	[.QWORD] %index_size          : %0;
+	[.QWORD] %index_end           : %1;
+	[.QWORD] %index_first         : %2;
+	[.DWORD] %index_id            : %3;
+	[.QWORD] %index_cursor_iter   : %4;
+	[.QWORD] %index_max           : %5;
+
+	[.QWORD] $index_first_id_addr : $[ABS:%index_first, %index_id];
+	[.QWORD] $index_end_id_addr   : $[ABS:%index_end, %index_id];
+
+		%index_max->MOV(26);
+		%index_size->MOV($words.size);
+		%index_size->MUL(6);
+		%index_size->PUSH();
+		%index_size->ADD(2);
+		%index_size->MUL(%index_max);
+		.MEMORY.ALLOC($index.first, %index_size);
+
+		%index_size->POP();
+		%index_first->MOV($index.first);
+		%index_max->MOV(26);
+		%index_max->SHL(3);
+		%index_end->LEA($[ABS:%index_first, %index_max]);
+		$index.end->MOV(%index_end);
+		%index_cursor_iter->LEA($[ABS:%index_end, %index_max]);
+		%index_id->MOV(0);
+
+	$loop :
+
+		%index_id->CMP(%index_max);
+		.JUMP_IF_GE($finish);
+
+		$index_first_id_addr->MOV(%index_cursor_iter);
+		$index_end_id_addr->MOV(%index_cursor_iter);
+
+		%index_id->ADD(8);
+		%index_cursor_iter->ADD(%index_size);
+
+		.JUMP($loop);
+
+	$finish :
+		.NOP();
+
+}
+
+FILL_INDEX(@words:@words, @chars:@chars, @index:@index) {
+
+	[.DWORD] %mask            : %0;
+	[.DWORD] %char            : %1;
+	[.QWORD] %word_addr       : %2;
+	[.QWORD] %words_iter      : %3;
+	[.QWORD] %chars_base      : %4;
+	[.QWORD] %index_iter      : %5;
+	[.QWORD] %index_end       : %6;
+
+	[.BYTE ] $words_iter_char : $[ABS:%words_iter];
+	[.BYTE ] $chars_base_char : $[ABS:%chars_base, %char];
+	[.QWORD] $index_end_addr  : $[ABS:%index_end, %char * 8];
+	[.DWORD] $index_iter_mask : $[ABS:%index_iter];
+	[.QWORD] $index_iter_addr : $[ABS:%index_iter, 4];
+
+		%index_end->MOV($index.end);
+		%words_iter->MOV($words.first);
+		%chars_base->MOV($chars.first);
+
+	$start :
+
+		%word_addr->MOV(%words_iter);
+		%mask->MOV(0);
+
+	$analyse_char :
+
+		%char->MOVX_B($words_iter_char);
+		%char->MOV($chars_base_char);
+		%char->SUB(1);
+		.JUMP_IF_L($save_word);
+		
+		%mask->BTS(%char);
+		.JUMP_IF_C($abort_word);
+		
+
+		%words_iter->ADD(1);
+		.JUMP($analyse_char);
+
+	$abort_word :
+
+		%words_iter->ADD(1);
+
+		%char->MOVX_B($words_iter_char);
+		%char->MOV($chars_base_char);
+		%char->SUB(1);
+		.JUMP_IF_L($next_word);
+		
+		.JUMP($abort_word);
+
+	$save_word :
+
+		%char->BSF(%mask);
+		%index_iter->MOV($index_end_addr);
+
+		$index_iter_mask->MOV(%mask);
+		$index_iter_addr->MOV(%word_addr);
+
+		$index_end_addr->ADD(12);
+
+	$next_word :
+
+		%words_iter->ADD(1);
+
+		%words_iter->CMP($words.end);
+		.JUMP_IF_GE($finish);
+
+		%char->MOVX_B($words_iter_char);
+		%char->MOV($chars_base_char);
+		%char->SUB(1);
+		.JUMP_IF_L($next_word);
+
+		.JUMP($start);
+
+	$finish :
+
+		.NOP();
+
+}
+
+CREATE_FOUND(@words:@words, @index:@index, @found:@found) {
+
+	$found.size->MOV($words.size);
+	.MEMORY.ALLOC($found.first, $found.size);
+	$found.end->MOV($found.first);
+	$found.end->ADD($found.size);
+
+}
+
+FILL_FOUND(@chars:@chars, @index:@index, @found:@found, #max_omitted_letters:#max_omitted_letters) {
+
+	[.DWORD] %mask                  : %0;
+	[.DWORD] %char                  : %1;
+	[.BYTE ] %level                 : %2;
+	[.BYTE ] %omitted               : %3;
+	[.QWORD] %index_first           : %4;
+	[.QWORD] %index_end             : %5;
+	[.QWORD] %index_iter            : %6;
+	[.QWORD] %char_iter             : %6;
+	[.QWORD] %stack_iter            : %7;
+	[.QWORD] %stack_level           : %8;
+	[.QWORD] %found_iter            : %9;
+	
+	[.QWORD] $index_first_addr      : $[ABS:%index_first, %char * 8];
+	[.QWORD] $index_end_addr        : $[ABS:%index_end, %char * 8];
+	[.DWORD] $index_iter_mask       : $[ABS:%index_iter];
+	[.QWORD] $index_iter_addr       : $[ABS:%index_iter, 4];
+	[.QWORD] $stack_iter_index_iter : $[SP:%stack_iter];
+	[.BYTE ] $found_iter_char       : $[ABS:%found_iter];
+	[.BYTE ] $found_iter_pchar      : $[ABS:%found_iter, -1];
+	[.BYTE ] $char_iter_char        : $[ABS:%char_iter];
+
+	%index_first->MOV($index.first);
+	%index_end->MOV($index.end);
+	%found_iter->MOV($found.first);
+
+	%mask->MOV(0);
+	%level->MOV(0);
+	%omitted->MOV(0);
+
+	$start :
+
+		%char->MOV(%mask);
+		%char->NOT();
+		%char->BSF(%char);
+		%char->CMP(26);
+		.JUMP_IF_GE($save);
+
+		%index_iter->MOV($index_first_addr);
+
+	$compare :
+
+		%index_iter->CMP($index_end_addr);
+		.JUMP_IF_GE($omit);
+
+		%mask->TEST($index_iter_mask);
+		.JUMP_IF_Z($push);
+
+		%index_iter->ADD(12);
+		.JUMP($compare);
+
+	$omit :
+
+		%omitted->CMP(#max_omitted_letters);
+		.JUMP_IF_GE($pop);
+
+		%omitted->ADD(1);
+		%mask->BTS(%char);
+
+		.JUMP($start);
+
+	$push :
+
+		%mask->PUSH();
+		%char->PUSH();
+		%omitted->PUSH();
+		%index_iter->PUSH();
+
+		%level->ADD(1);
+
+		%mask->OR($index_iter_mask);
+
+		.JUMP($start);
+
+	$pop :
+
+		%level->SUB(1);
+		.JUMP_IF_L($finish);
+
+		%index_iter->POP();
+		%omitted->POP();
+		%char->POP();
+		%mask->POP();
+
+		%index_iter->ADD(12);
+
+		.JUMP($compare);
+
+	$save :
+
+		%stack_iter->MOV(0);
+		%stack_level->MOV(%level);
+
+	$save_stack_ascend :
+
+		%stack_level->CMP(0);
+		.JUMP_IF_LE($save_conclude);
+		
+		%index_iter->MOV($stack_iter_index_iter);
+		%char_iter->MOV($index_iter_addr);
+
+	$save_copy_char :
+
+		%found_iter->CMP($found.end);
+		.JUMP_IF_GE($realloc);
+
+		$char_iter_char->CMP(0);
+		.JUMP_IF_E($save_increment_stack);
+
+		$found_iter_char->MOV($char_iter_char);
+
+		%char_iter->ADD(1);
+		%found_iter->ADD(1);
+
+		.JUMP($save_copy_char);
+
+	$realloc :
+
+		%level->PUSH();
+		%index_first->PUSH();
+		%index_end->PUSH();
+		%stack_iter->PUSH();
+		%stack_level->PUSH();
+		%char_iter->PUSH();
+
+		%found_iter->SUB($found.first);
+		%found_iter->PUSH();
+
+		$found.size->SHL(2);
+		.MEMORY.RESIZE($found.first, $found.size);
+
+		%found_iter->POP();
+		%found_iter->ADD($found.first);
+		$found.end->MOV($found.first);
+		$found.end->ADD($found.size);
+
+		%char_iter->POP();
+		%stack_level->POP();
+		%stack_iter->POP();
+		%index_end->POP();
+		%index_first->POP();
+		%level->POP();
+		
+		.JUMP($save_copy_char);
+
+	$save_increment_stack :
+
+		$found_iter_char->MOV(",");
+		%found_iter->ADD(1);
+
+		%stack_level->SUB(1);
+		%stack_iter->ADD(17);
+
+		.JUMP($save_stack_ascend);
+
+	$save_conclude :
+
+		$found_iter_pchar->MOV("\n");
+		$found.count->ADD(1);
+
+		.JUMP($pop);
+
+	$finish :
+
+		$found.end->MOV(%found_iter);
+		$found.size->MOV(%found_iter);
+		$found.size->SUB($found.first);	
+
+}
+
+PRINT_RESULT(@found:@found) {
+
+	[.QWORD] %found : %1;
+
+		$found.size->CMP(0);
+		.JUMP_IF_E($finish);
+
+		%found->MOV($found.first);
+		.CONSOLE.WRITE(%found, $found.size);
+
+	$finish :
+
+		.NOP();
+
+}
+
+$c_t->UPDATE();
+
+.MEMORY.FREE($words.first);
+.MEMORY.FREE($index.first);
+.MEMORY.FREE($found.first);
+
+.CONSOLE.WRITE_LN();
+
+$found.count->PRINT();
+
+.CONSOLE.WRITE(" combinations found in ");
+
+.TIME.DURATION($duration, $p_t, $c_t);
+
+$duration->DIV(10000);
+
+$duration->PRINT();
+
+.CONSOLE.WRITE("ms.");
+
+.PROC.EXIT();
