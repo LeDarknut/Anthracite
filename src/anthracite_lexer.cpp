@@ -4,6 +4,11 @@ namespace ANTHRACITE {
 
 	LEXED::LEXED(LOADED& i_loaded) : loaded(&i_loaded), tokenList() {
 
+		/*
+			Split the loaded string into tokens
+			Convert string values to int
+		*/
+
 		BYTE* f_char = loaded->source.begin();
 
 		if (loaded->source.size() == 0) {
@@ -26,6 +31,8 @@ namespace ANTHRACITE {
 				*f_char == '&'
 			) {
 
+				//Handle symbols : @box / $memory / %register / #value / &section
+
 				if		(*f_char == '@') f1_token.type = t_BOX;
 				else if	(*f_char == '$') f1_token.type = t_MEM;
 				else if	(*f_char == '%') f1_token.type = t_REG;
@@ -35,6 +42,8 @@ namespace ANTHRACITE {
 				f1_token.content += *f_char;
 
 				f_char ++;
+
+				//Handle boxes : $box.memory / #box.box.value / ...
 
 				do {
 
@@ -87,6 +96,9 @@ namespace ANTHRACITE {
 
 			}
 			else if	(
+
+				//Convert values to int : 13 / 0xD / 0b1101
+
 				(*f_char >= '0' && *f_char <= '9') ||
 				(
 					f_char + 1 < loaded->source.end() &&
@@ -287,6 +299,8 @@ namespace ANTHRACITE {
 			}
 			else if	(*f_char == '"') {
 
+				//Handle double quotes strings : "string"
+
 				f1_token.type = t_LTR;
 
 				f1_token.content += *f_char;
@@ -331,6 +345,8 @@ namespace ANTHRACITE {
 
 			}
 			else if	(*f_char == '\'') {
+
+				//Handle single quote strings : 'string'
 
 				f1_token.type = t_GLB;
 
@@ -381,6 +397,8 @@ namespace ANTHRACITE {
 				(*f_char == '_')
 			) {
 
+				//Handle block name and functions
+
 				f1_token.type = t_LBL;
 
 				while (
@@ -403,6 +421,8 @@ namespace ANTHRACITE {
 				(*f_char == '-' && *(f_char + 1) == '>')
 			) {
 
+				//Handle double chars operator : ->
+
 				f1_token.type = t_OPR;
 
 				f1_token.content += *f_char;
@@ -415,6 +435,8 @@ namespace ANTHRACITE {
 
 			}
 			else {
+
+				//Handle single char operators
 
 				f1_token.type = t_OPR;
 
@@ -529,6 +551,10 @@ namespace ANTHRACITE {
 	}
 
 	ERROR traceToken(LEXED& i_lexed, TOKEN& i_token, STRING i_message) {
+
+		/*
+			Trace error from token
+		*/
 
 		return tracePointer(*i_lexed.loaded, i_token.pointer, "'" + i_token.content + "' " + i_message);
 

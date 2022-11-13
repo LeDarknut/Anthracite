@@ -6,6 +6,8 @@ int main(int argc, char** argv) {
 
 	try {
 
+		//Parse arguments 
+
 		if (argc < 2) {
 
 			throw(ERROR("Command line target expected."));
@@ -32,6 +34,8 @@ int main(int argc, char** argv) {
 
 		STRING f_object;
 
+		BOOL f_clean = false;
+
 		BOOL f_execute = false;
 
 		LIST<STRING> f_pathList;
@@ -39,6 +43,8 @@ int main(int argc, char** argv) {
 		for (DWORD f1_argId = 2; f1_argId < argc; f1_argId ++) {
 
 			if		(STRING(argv[f1_argId]) == "-d") {
+
+				//linker output path
 
 				f1_argId ++;
 
@@ -59,6 +65,8 @@ int main(int argc, char** argv) {
 			}
 			else if	(STRING(argv[f1_argId]) == "-o") {
 
+				//object path
+
 				f1_argId ++;
 
 				if (f1_argId == argc) {
@@ -78,6 +86,8 @@ int main(int argc, char** argv) {
 			}
 			else if	(STRING(argv[f1_argId]) == "-p") {
 
+				//lib path
+
 				f1_argId ++;
 
 				if (f1_argId == argc) {
@@ -95,7 +105,8 @@ int main(int argc, char** argv) {
 				}			
 
 			}
-			else if	(STRING(argv[f1_argId]) == "-x") f_execute = true;
+			else if	(STRING(argv[f1_argId]) == "-x") f_execute = true; //execute after linking
+			else if	(STRING(argv[f1_argId]) == "-c") f_clean = true; //delete object file
 			else {
 
 				throw(ERROR("Wrong argument '" + STRING(argv[f1_argId]) + "' ."));
@@ -103,6 +114,8 @@ int main(int argc, char** argv) {
 			}
 
 		}
+
+		//Generate automatic arguments
 
 		f_pathList += f_path + "\\lib";
 		f_pathList += f_path + "\\include";
@@ -118,6 +131,8 @@ int main(int argc, char** argv) {
 			f_object = std::filesystem::absolute(f_source.c()).replace_extension(".obj").string();
 
 		}
+
+		//Compile
 
 		LOADED f_loaded(f_source, f_pathList);
 
@@ -142,6 +157,8 @@ int main(int argc, char** argv) {
 
 		}
 
+		//Link
+
 		DWORD f_link = system(("link /nologo /nodefaultlib " + f_loaded.entry + " " + f_loaded.subsystem + " " + f_object + " /libpath:" + f_path + "\\lib" + f_libs + " /out:" + f_destination).c());
 
 		if (f_link != 0) {
@@ -149,6 +166,16 @@ int main(int argc, char** argv) {
 			throw(ERROR("Linking error."));
 
 		}
+
+		//Clean object file
+
+		if (f_clean) {
+
+			std::filesystem::remove(f_object.c());
+
+		}
+
+		//Execute
 
 		if (f_execute) {
 

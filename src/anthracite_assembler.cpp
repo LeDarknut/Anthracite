@@ -4,6 +4,12 @@ namespace ANTHRACITE {
 
 	ASSEMBLED::ASSEMBLED(ENCODED &i_encoded) : encoded(&i_encoded), sectionList(), defList(), reqList() {
 
+		/*
+			Merge the machine code
+			Solve relative symbols
+			Construct the object file
+		*/
+
 		for (INST *f1_inst = encoded->instList.begin(); f1_inst < encoded->instList.end(); f1_inst++) {
 
 			if (f1_inst->section <= s_GLB) continue;
@@ -111,6 +117,10 @@ namespace ANTHRACITE {
 	}
 
 	SDWORD ASSEMBLED::symOffset(INST *i_inst) {
+
+		/*
+			Compute the number of byte that separates a symbol target from its requested location
+		*/
 
 		SDWORD o_offset = 0;
 
@@ -261,6 +271,10 @@ namespace ANTHRACITE {
 
 	VOID ASSEMBLED::addDef(INST* i_inst) {
 
+		/*
+			Append a symbol definition to the symbol table
+		*/
+
 		DWORD f_offset = 0;
 
 		for (INST *f1_inst = i_inst; f1_inst >= encoded->instList.begin(); f1_inst --) {
@@ -317,6 +331,10 @@ namespace ANTHRACITE {
 
 	VOID ASSEMBLED::addReq(INST* i_inst) {
 
+		/*
+			Append a symbol requirement to the redirection table
+		*/
+
 		DWORD f_offset = 0;
 
 		for (DWORD f1_sectionId = 0; f1_sectionId < i_inst->section; f1_sectionId ++) {
@@ -334,6 +352,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ASSEMBLED::assemble() {
+
+		/*
+			Construct the object file
+		*/
 
 		STRING o_string;
 
@@ -371,6 +393,10 @@ namespace ANTHRACITE {
 
 	STRING ASSEMBLED::assemble_code() {
 
+		/*
+			Merge the machine code
+		*/
+
 		STRING o_string;
 
 		for (STRING* f1_section = sectionList.begin(); f1_section < sectionList.end(); f1_section ++) {
@@ -384,6 +410,10 @@ namespace ANTHRACITE {
 	}
 	
 	STRING ASSEMBLED::assemble_req() {
+
+		/*
+			Merge tthe redirection table
+		*/
 
 		STRING o_string;
 
@@ -417,6 +447,10 @@ namespace ANTHRACITE {
 	}
 	
 	STRING ASSEMBLED::assemble_def() {
+
+		/*
+			Merge the symbol table and the string table
+		*/
 
 		STRING o_string;
 
@@ -462,7 +496,6 @@ namespace ANTHRACITE {
 			}
 
 			o_string += BYTE(2);
-
 			o_string += BYTE(0);
 
 		}
@@ -482,6 +515,10 @@ namespace ANTHRACITE {
 	}
 
 	VOID ASSEMBLED::save(STRING i_file) {
+
+		/*
+			Write to file
+		*/
 
 		std::ofstream f_file(i_file.c(), std::ifstream::binary);
 

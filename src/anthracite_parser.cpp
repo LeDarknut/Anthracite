@@ -4,6 +4,10 @@ namespace ANTHRACITE {
 
 	PARSED::PARSED(LEXED& i_lexed) : lexed(&i_lexed), block() {
 
+		/*
+			Parse the tokens into a tree of blocks
+		*/
+
 		TOKEN* f_token = lexed->tokenList.begin();
 
 		block = parse_block(f_token);
@@ -12,9 +16,15 @@ namespace ANTHRACITE {
 
 	EXPR PARSED::parse_expr(TOKEN*& i_token) {
 
+		/*
+			Parse a function call : [PREFIX] $label : FUNCTION(arg1, arg2) {line;};
+		*/
+
 		EXPR o_expr(0);
 
 		expect(i_token);
+
+		//Check if the line declares a new block
 
 		TOKEN* f_token = i_token;
 
@@ -45,6 +55,8 @@ namespace ANTHRACITE {
 
 			if (i_token->content == "[") {
 
+				//Handle symbol's prefix : [PREFIX]
+
 				next(i_token);
 
 				f1_def.prefix = parse_path(i_token);
@@ -67,6 +79,8 @@ namespace ANTHRACITE {
 
 			if (i_token->content.size() == 1) {
 
+				//Handle global symbols : $['global'] / #['global] / ...
+
 				next(i_token);
 
 				if (i_token->content != "[")
@@ -87,6 +101,8 @@ namespace ANTHRACITE {
 			}
 			else {
 
+				//Handle local symbols : $memory / ...
+
 				f1_def.name = *i_token;
 
 			}
@@ -104,9 +120,13 @@ namespace ANTHRACITE {
 
 		if (f_def) {
 
+			//The line defines a block
+
 			o_expr.type |= e_D000;
 
 			if (i_token->content == ".") {
+
+				//Mark block as root
 
 				o_expr.type |= e_0R00;
 
@@ -123,12 +143,16 @@ namespace ANTHRACITE {
 
 			if (i_token->content == "(") {
 
+				//Handle arguments
+
 				o_expr.args = parse_args(i_token, 2);
 
 				expect(i_token);
 
 			}
 			else {
+
+				//block without arguments are non callable
 
 				o_expr.type |= e_000P;
 
@@ -138,6 +162,8 @@ namespace ANTHRACITE {
 
 				if		(i_token->content == "?") {
 
+					//Make the block hidden
+
 					o_expr.type |= e_00H0;
 
 					next(i_token);
@@ -145,12 +171,16 @@ namespace ANTHRACITE {
 				}
 				else if	(i_token->content == "!") {
 
+					//Make the block non callable
+
 					o_expr.type |= e_000P;
 
 					next(i_token);
 
 				}
 				else {
+
+					//Handle the block's section
 
 					if (o_expr.section.size() > 0)
 						throw(traceToken(*lexed, *i_token, "Ambiguous block's section."));
@@ -166,12 +196,16 @@ namespace ANTHRACITE {
 
 			}
 
+			//Handle the block's content : {line;}
+
 			o_expr.block = parse_block(i_token);
 			
 			if (inRange(i_token) && i_token->content == ";") i_token ++;
 
 		}
 		else {
+
+			//The line does not define a block
 
 			if (i_token->isSct() && i_token->content.size() == 1) {
 
@@ -186,6 +220,8 @@ namespace ANTHRACITE {
 
 			}
 
+			//Function name or symbol name
+
 			o_expr.target = parse_path(i_token);
 
 			for (TOKEN* f1_token = o_expr.target.end() - 1; f1_token > o_expr.target.begin(); f1_token --) {
@@ -193,7 +229,7 @@ namespace ANTHRACITE {
 				if (!f1_token->is() && (f1_token - 1)->isSct()) {
 
 					if (o_expr.section.size() > 0)
-						throw(traceToken(*lexed, *i_token, "Section cannot be prefixed expected."));
+						throw(traceToken(*lexed, *i_token, "Section cannot be prefixed."));
 
 					o_expr.section = o_expr.target.to(f1_token);
 
@@ -210,6 +246,8 @@ namespace ANTHRACITE {
 
 			if (o_expr.target.size() == 0)
 				throw(traceToken(*lexed, *i_token, "Function name expected."));
+
+			//Handle arguments : (arg1, arg2)
 
 			o_expr.args = parse_args(i_token, 1);
 
@@ -228,6 +266,10 @@ namespace ANTHRACITE {
 
 	ARG PARSED::parse_arg(TOKEN*& i_token, BYTE i_defMode) {
 
+		/*
+			Parse a symbol declaration : [PREFIX] %symbol : %value;
+		*/
+
 		ARG o_arg(0);
 
 		expect(i_token);
@@ -235,6 +277,8 @@ namespace ANTHRACITE {
 		BYTE f_defMode = i_defMode;
 
 		if (i_token->content == "[") {
+
+			//Handle prefix : [PREFIX]
 
 			if (f_defMode == 0)
 				throw(traceToken(*lexed, *i_token, "Prefix unexpected."));
@@ -260,6 +304,8 @@ namespace ANTHRACITE {
 		
 		if (f_defMode == 1) {
 
+			//Argument type (name/position) is automatic
+
 			if (
 				(
 					inRange(i_token + 1) &&
@@ -277,10 +323,14 @@ namespace ANTHRACITE {
 				)
 			) {
 
+				//Argument has a name
+
 				f_defMode = 2;
 
 			}
 			else {
+
+				//Argument is positional
 
 				f_defMode = 0;
 
@@ -294,6 +344,8 @@ namespace ANTHRACITE {
 				throw(traceToken(*lexed, *i_token, "Section definition cannot be prefixed."));
 
 			if (i_token->content.size() == 1) {
+
+				//Handle global symbol : $['global']
 
 				next(i_token);
 
@@ -317,6 +369,8 @@ namespace ANTHRACITE {
 			}
 			else {
 
+				//Handle local symbol : $symbol
+
 				o_arg.type |= i_token->type;
 
 				o_arg.name = *i_token;
@@ -335,6 +389,8 @@ namespace ANTHRACITE {
 
 				if (i_token->content == "?") {
 
+					//Argument is optional
+
 					if (o_arg.isOpt())
 						throw(traceToken(*lexed, *i_token, "Operator '?' unexpected."));
 
@@ -342,6 +398,8 @@ namespace ANTHRACITE {
 
 				}
 				else {
+
+					//Argument has a forced value
 
 					if (o_arg.isFrc())
 						throw(traceToken(*lexed, *i_token, "Operator '!' unexpected."));
@@ -375,12 +433,18 @@ namespace ANTHRACITE {
 
 			if 		(!inRange(i_token)) {
 
+				//Argument target is Null
+
 				o_arg.type |= a_00N0;
 
 			}
 			else if	(!i_token->isSym()) {
+
+				//Argument target is not a direct symbol
 				
 				if	 (i_token->isLbl() || i_token->content == ".") {
+
+					//Argument target is a symbol inside another block
 
 					o_arg.type |= a_00T0;
 
@@ -396,6 +460,8 @@ namespace ANTHRACITE {
 
 				}
 				else if	(i_token->isLtr()) {
+
+					//Argument target is a literal
 
 					if (f_defMode == 2) {
 
@@ -413,6 +479,8 @@ namespace ANTHRACITE {
 
 				}
 				else if (i_token->content == "(") {
+
+					//Argument target is an argument list
 
 					if (f_defMode == 2) {
 
@@ -432,6 +500,8 @@ namespace ANTHRACITE {
 			}
 			else if (i_token->content.size() == 1) {
 
+				//Argument target is a special symbol : $['global'] / #[ADD:3, 4] / %0
+
 				if (f_defMode == 2) {
 
 					if ((o_arg.type & a_0001) != i_token->type)
@@ -448,6 +518,8 @@ namespace ANTHRACITE {
 
 					if (i_token->isGlb()) {
 
+						//Argument target is global : $['global']
+
 						o_arg.type |= a_00G0;
 
 						o_arg.target = *i_token;
@@ -462,11 +534,13 @@ namespace ANTHRACITE {
 					}
 					else {
 
+						//Argument belongs to an operation : #[ADD: 3, 4], $[ABS:%0]
+
 						i_token -= 2;
 
 						if		(i_token->isMem()) {
 
-							o_arg.args = parse_sym(i_token);
+							o_arg.args = parse_mem(i_token);
 
 						}
 						else if	(i_token->isVal()) {
@@ -497,6 +571,8 @@ namespace ANTHRACITE {
 				}
 				else if	(i_token->isLtr()) {
 
+					//Argument target is a literal register or a literal section : %0 / &0
+
 					o_arg.type |= a_00L0;
 
 					if (!(i_token - 1)->isReg() && !(i_token - 1)->isSct())
@@ -512,10 +588,12 @@ namespace ANTHRACITE {
 			}
 			else {
 
+				//Argument target is a regular symbol : $symbol
+
 				o_arg.target = parse_path(i_token);
 
 				if (o_arg.target.size() == 0)
-					throw(traceToken(*lexed, *i_token, "target cannot be empty."));
+					throw(traceToken(*lexed, *i_token, "Target cannot be empty."));
 
 				if (!o_arg.target[-1].isSym())
 					throw(traceToken(*lexed, *i_token, "Target must end with a definition."));
@@ -540,6 +618,10 @@ namespace ANTHRACITE {
 
 	BLOCK PARSED::parse_block(TOKEN*& i_token) {
 
+		/*
+			Parse a block of lines : {line;}
+		*/
+
 		BLOCK o_block;
 
 		expect(i_token);
@@ -554,6 +636,8 @@ namespace ANTHRACITE {
 		}
 
 		while (inRange(i_token) && i_token->content != "}") {
+
+			//Check weither the line is a function call or a symbol declaration
 
 			TOKEN* f1_token = i_token;
 
@@ -605,6 +689,10 @@ namespace ANTHRACITE {
 
 	LIST<LIST<ARG>> PARSED::parse_args(TOKEN*& i_token, BYTE i_defMode) {
 
+		/*
+			parse a list of argument : (arg1, arg2)
+		*/
+
 		LIST<LIST<ARG>> o_args;
 
 		expect(i_token + 1);
@@ -630,10 +718,14 @@ namespace ANTHRACITE {
 
 				if (i_token->content == "|") {
 
+					//Alternative argument
+
 					f1_argList += ARG();
 
 				}
 				else if (i_token->content == ',' || i_token->content == ')') {
+
+					//Next argument
 
 					f1_argList += ARG();
 					break;
@@ -663,6 +755,10 @@ namespace ANTHRACITE {
 	}
 
 	LIST<TOKEN> PARSED::parse_path(TOKEN*& i_token) {
+
+		/*
+			Parse a target path : BLOCK.SUBBLOCK->$prefixedSymbol->%trueTarget
+		*/
 
 		LIST<TOKEN> o_path;
 
@@ -721,13 +817,17 @@ namespace ANTHRACITE {
 
 	}
 
-	LIST<LIST<ARG>> PARSED::parse_sym(TOKEN*& i_token) {
+	LIST<LIST<ARG>> PARSED::parse_mem(TOKEN*& i_token) {
+
+		/*
+			Parse special memory symbol : $[ABS:%base, %index * 1, #offset] / $[SP:%0*8] / $[SB:%0*8]
+		*/
 
 		LIST<LIST<ARG>> o_args;
 
 		expect(i_token + 2);
 
-		if ((!i_token->isSym() && i_token->content.size() != 1) ||
+		if ((!i_token->isMem() && i_token->content.size() != 1) ||
 			(i_token + 1)->content != "[")
 			throw(traceToken(*lexed, *i_token, "Symbol operator '$[' expected."));
 
@@ -838,6 +938,10 @@ namespace ANTHRACITE {
 
 	LIST<LIST<ARG>> PARSED::parse_val(TOKEN*& i_token) {
 
+		/*
+			Parse special value symbol : #[ADD: 1, 2] / ...
+		*/
+
 		LIST<LIST<ARG>> o_args;
 
 		expect(i_token + 2);
@@ -864,6 +968,7 @@ namespace ANTHRACITE {
 			i_token->content != "ADD" &&
 			i_token->content != "APPEND" &&
 			i_token->content != "SIZE" &&
+			i_token->content != "MASK" &&
 			i_token->content != "NOT" &&
 			i_token->content != "NEG")
 			throw(traceToken(*lexed, *i_token, "In valid box operation '" + i_token->content + "'."));
@@ -899,6 +1004,7 @@ namespace ANTHRACITE {
 
 		if (o_args[0].size() != 2 &&
 		   (o_args[0][0].target[0].content == "SIZE" ||
+		   o_args[0][0].target[0].content == "MASK" ||
 			o_args[0][0].target[0].content == "NOT" ||
 			o_args[0][0].target[0].content == "NEG"))
 			throw(traceToken(*lexed, *i_token, "Value operator '" + o_args[0][0].target[0].content + "' can only handle one operand."));
@@ -919,6 +1025,11 @@ namespace ANTHRACITE {
 
 	VOID PARSED::next(TOKEN*& i_token) {
 
+		/*
+			Go to next token
+			Throw error if there is no next token
+		*/
+
 		i_token ++;
 
 		if (i_token >= lexed->tokenList.end())
@@ -928,12 +1039,20 @@ namespace ANTHRACITE {
 
 	VOID PARSED::expect(TOKEN* i_token) {
 
+		/*
+			Throw error if there is no next token
+		*/
+
 		if (i_token >= lexed->tokenList.end())
 			throw(traceToken(*lexed, lexed->tokenList[-1], "Unexpected file's end."));
 
 	}
 
 	BOOL PARSED::inRange(TOKEN* i_token) {
+
+		/*
+			Check if token exists
+		*/
 
 		return (i_token < lexed->tokenList.end());
 
@@ -1600,11 +1719,19 @@ namespace ANTHRACITE {
 
 	ERROR traceExpr(PARSED& i_parsed, EXPR& i_expr, STRING i_message) {
 
+		/*
+			Trace error from expression
+		*/
+
 		return traceToken(*i_parsed.lexed, i_expr.target[0], i_message);
 
 	}
 
 	ERROR tracePath(PARSED& i_parsed, LIST<TOKEN> i_path, STRING i_message) {
+
+		/*
+			Trace error from path
+		*/
 
 		for (TOKEN* f1_path = i_path.end() - 1; f1_path >= i_path.begin(); f1_path --) {
 			

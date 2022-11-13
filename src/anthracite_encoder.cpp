@@ -4,6 +4,10 @@ namespace ANTHRACITE {
 
 	ENCODED::ENCODED(SOLVED &i_solved) : solved(&i_solved), instList() {
 
+		/*
+			Convert basic instruction to list of machine code instructions
+		*/
+
 		LIST<SWORD> f_sectionList;
 
 		for (LINE* f1_line = solved->lineList.begin(); f1_line < solved->lineList.end(); f1_line++) {
@@ -77,173 +81,191 @@ namespace ANTHRACITE {
 
 			}
 
+			STRING f1_name = f1_line->name.content;
 			BYTE f1_mode = 0;
+			BYTE f1_mode2 = 0;
 			BYTE f1_cond = 0x80;
 
 			if (
-				f1_line->name.content.size() > 2 &&
-				f1_line->name.content[-2] == '_' &&
+				f1_name.size() > 2 &&
+				f1_name[-2] == '_' &&
 				(
-					f1_line->name.content[-1] == 'B' ||
-					f1_line->name.content[-1] == 'W' ||
-					f1_line->name.content[-1] == 'D' ||
-					f1_line->name.content[-1] == 'Q'
+					f1_name[-1] == 'B' ||
+					f1_name[-1] == 'W' ||
+					f1_name[-1] == 'D' ||
+					f1_name[-1] == 'Q'
 				)
 			) {
 
-				if (f1_line->name.content[-1] == 'B') f1_cond = 0x02;
+				if (f1_name[-1] == 'B') f1_cond = 0x02;
 
-				f1_mode = f1_line->name.content[-1];
-				f1_line->name.content = f1_line->name.content.to(-2);
+				f1_mode = f1_name[-1];
+				f1_name = f1_name.to(-2);
 
 			}
 
 			if (
-				f1_line->name.content.size() > 2 &&
-				f1_line->name.content[-2] == '_'
+				f1_name.size() > 2 &&
+				f1_name[-2] == '_'
 			) {
 
-				if		(f1_line->name.content[-1] == 'O') f1_cond = 0x00;
-				else if	(f1_line->name.content[-1] == 'B') f1_cond = 0x02;
-				else if	(f1_line->name.content[-1] == 'C') f1_cond = 0x02;
-				else if	(f1_line->name.content[-1] == 'E') f1_cond = 0x04;
-				else if	(f1_line->name.content[-1] == 'Z') f1_cond = 0x04;
-				else if	(f1_line->name.content[-1] == 'A') f1_cond = 0x07;
-				else if	(f1_line->name.content[-1] == 'S') f1_cond = 0x08;
-				else if	(f1_line->name.content[-1] == 'P') f1_cond = 0x0A;
-				else if	(f1_line->name.content[-1] == 'L') f1_cond = 0x0C;
-				else if	(f1_line->name.content[-1] == 'G') f1_cond = 0x0F;
-				else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_line->name.content + "'."));
+				if		(f1_name[-1] == 'O') f1_cond = 0x00;
+				else if	(f1_name[-1] == 'B') f1_cond = 0x02;
+				else if	(f1_name[-1] == 'C') f1_cond = 0x02;
+				else if	(f1_name[-1] == 'E') f1_cond = 0x04;
+				else if	(f1_name[-1] == 'Z') f1_cond = 0x04;
+				else if	(f1_name[-1] == 'A') f1_cond = 0x07;
+				else if	(f1_name[-1] == 'S') f1_cond = 0x08;
+				else if	(f1_name[-1] == 'P') f1_cond = 0x0A;
+				else if	(f1_name[-1] == 'L') f1_cond = 0x0C;
+				else if	(f1_name[-1] == 'G') f1_cond = 0x0F;
+				else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_name + "'."));
 
-				f1_line->name.content = f1_line->name.content.to(-2);
+				f1_name = f1_name.to(-2);
 
 			}
 			else if (
-				f1_line->name.content.size() > 3 &&
-				f1_line->name.content[-3] == '_'
+				f1_name.size() > 3 &&
+				f1_name[-3] == '_'
 			) {
 
-				if		(f1_line->name.content[-2] == 'N') {
+				if (
+					(f1_name[-1] == 'B' && (f1_name[-2] == 'W' || f1_name[-2] == 'D' || f1_name[-2] == 'Q')) ||
+					(f1_name[-1] == 'W' && (f1_name[-2] == 'D' || f1_name[-2] == 'Q')) ||
+					(f1_name[-1] == 'D' && f1_name[-2] == 'Q')
+				) {
 
-					if		(f1_line->name.content[-1] == 'O') f1_cond = 0x01;
-					else if	(f1_line->name.content[-1] == 'B') f1_cond = 0x03;
-					else if	(f1_line->name.content[-1] == 'C') f1_cond = 0x03;
-					else if	(f1_line->name.content[-1] == 'E') f1_cond = 0x05;
-					else if	(f1_line->name.content[-1] == 'Z') f1_cond = 0x05;
-					else if	(f1_line->name.content[-1] == 'A') f1_cond = 0x06;
-					else if	(f1_line->name.content[-1] == 'S') f1_cond = 0x09;
-					else if	(f1_line->name.content[-1] == 'P') f1_cond = 0x0B;
-					else if	(f1_line->name.content[-1] == 'L') f1_cond = 0x0D;
-					else if	(f1_line->name.content[-1] == 'G') f1_cond = 0x0E;
-					else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_line->name.content + "'."));
+					f1_mode = f1_name[-1];
+					f1_mode2 = f1_name[-2];					
 
 				}
-				else if		(f1_line->name.content[-1] == 'E') {
+				else if		(f1_name[-2] == 'N') {
 
-					if		(f1_line->name.content[-2] == 'A') f1_cond = 0x03;
-					else if	(f1_line->name.content[-2] == 'B') f1_cond = 0x06;
-					else if	(f1_line->name.content[-2] == 'P') f1_cond = 0x0A;
-					else if	(f1_line->name.content[-2] == 'G') f1_cond = 0x0D;
-					else if	(f1_line->name.content[-2] == 'L') f1_cond = 0x0E;
-					else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_line->name.content + "'."));
+					if		(f1_name[-1] == 'O') f1_cond = 0x01;
+					else if	(f1_name[-1] == 'B') f1_cond = 0x03;
+					else if	(f1_name[-1] == 'C') f1_cond = 0x03;
+					else if	(f1_name[-1] == 'E') f1_cond = 0x05;
+					else if	(f1_name[-1] == 'Z') f1_cond = 0x05;
+					else if	(f1_name[-1] == 'A') f1_cond = 0x06;
+					else if	(f1_name[-1] == 'S') f1_cond = 0x09;
+					else if	(f1_name[-1] == 'P') f1_cond = 0x0B;
+					else if	(f1_name[-1] == 'L') f1_cond = 0x0D;
+					else if	(f1_name[-1] == 'G') f1_cond = 0x0E;
+					else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_name + "'."));
 
 				}
-				else if		(f1_line->name.content[-1] == 'O') {
+				else if		(f1_name[-1] == 'E') {
 
-					if		(f1_line->name.content[-2] == 'P') f1_cond = 0x0B;
-					else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_line->name.content + "'."));
+					if		(f1_name[-2] == 'A') f1_cond = 0x03;
+					else if	(f1_name[-2] == 'B') f1_cond = 0x06;
+					else if	(f1_name[-2] == 'P') f1_cond = 0x0A;
+					else if	(f1_name[-2] == 'G') f1_cond = 0x0D;
+					else if	(f1_name[-2] == 'L') f1_cond = 0x0E;
+					else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_name + "'."));
 
 				}
-				else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_line->name.content + "'."));
+				else if		(f1_name[-1] == 'O') {
 
-				f1_line->name.content = f1_line->name.content.to(-3);
+					if		(f1_name[-2] == 'P') f1_cond = 0x0B;
+					else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_name + "'."));
+
+				}
+				else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_name + "'."));
+
+				f1_name = f1_name.to(-3);
 
 			}
 			else if (
-				f1_line->name.content.size() > 4 &&
-				f1_line->name.content[-4] == '_'
+				f1_name.size() > 4 &&
+				f1_name[-4] == '_'
 			) {
 
-				if		(f1_line->name.content[-3] == 'N' && f1_line->name.content[-1] == 'E') {
+				if		(f1_name[-3] == 'N' && f1_name[-1] == 'E') {
 
-					if		(f1_line->name.content[-2] == 'A') f1_cond = 0x02;
-					else if	(f1_line->name.content[-2] == 'B') f1_cond = 0x07;
-					else if	(f1_line->name.content[-2] == 'G') f1_cond = 0x0C;
-					else if	(f1_line->name.content[-2] == 'L') f1_cond = 0x0F;
-					else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_line->name.content + "'."));
+					if		(f1_name[-2] == 'A') f1_cond = 0x02;
+					else if	(f1_name[-2] == 'B') f1_cond = 0x07;
+					else if	(f1_name[-2] == 'G') f1_cond = 0x0C;
+					else if	(f1_name[-2] == 'L') f1_cond = 0x0F;
+					else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_name + "'."));
 
 				}
-				else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_line->name.content + "'."));
+				else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_name + "'."));
 
-				f1_line->name.content = f1_line->name.content.to(-4);
+				f1_name = f1_name.to(-4);
 
 			}
 
-			if		(f1_line->name.content == "NOP"		) instList += NOP(*f1_line);
+			if		(f1_name == "NOP"	) instList += NOP(*f1_line);
 
-			else if (f1_line->name.content == "FILE"	) instList += FILE(*f1_line);
-			else if (f1_line->name.content == "STRING"	) instList += STR(*f1_line);
-			else if (f1_line->name.content == "BYTE"	) instList += B(*f1_line);
-			else if (f1_line->name.content == "WORD"	) instList += W(*f1_line);
-			else if (f1_line->name.content == "DWORD"	) instList += D(*f1_line);
-			else if (f1_line->name.content == "QWORD"	) instList += Q(*f1_line);
+			else if (f1_name == "FILE"	) instList += FILE(*f1_line);
+			else if (f1_name == "STRING") instList += STR(*f1_line);
+			else if (f1_name == "SPACE") instList += SPACE(*f1_line);
+			else if (f1_name == "BYTE"	) instList += B(*f1_line);
+			else if (f1_name == "WORD"	) instList += W(*f1_line);
+			else if (f1_name == "DWORD"	) instList += D(*f1_line);
+			else if (f1_name == "QWORD"	) instList += Q(*f1_line);
 
-			else if (f1_line->name.content == "NOT" 	&& f1_mode != 0) instList += ALTER(*f1_line, f1_mode, 0xF6, 0x10);
-			else if (f1_line->name.content == "NEG"		&& f1_mode != 0) instList += ALTER(*f1_line, f1_mode, 0xF6, 0x18);
-			else if (f1_line->name.content == "INC"		&& f1_mode != 0) instList += ALTER(*f1_line, f1_mode, 0xFE, 0x00);
-			else if (f1_line->name.content == "DEC"		&& f1_mode != 0) instList += ALTER(*f1_line, f1_mode, 0xFE, 0x08);
-			else if (f1_line->name.content == "ROL"		&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x00);
-			else if (f1_line->name.content == "ROR"		&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x08);
-			else if (f1_line->name.content == "RCL"		&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x10);
-			else if (f1_line->name.content == "RCR"		&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x18);
-			else if (f1_line->name.content == "SHL"		&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x20);
-			else if (f1_line->name.content == "SHR"		&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x28);
-			else if (f1_line->name.content == "SAL"		&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x30);
-			else if (f1_line->name.content == "SAR"		&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x38);
-			else if (f1_line->name.content == "ADD"		&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x00);
-			else if (f1_line->name.content == "OR"		&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x08);
-			else if (f1_line->name.content == "ADC"		&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x10);
-			else if (f1_line->name.content == "SBB"		&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x18);
-			else if (f1_line->name.content == "AND"		&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x20);
-			else if (f1_line->name.content == "SUB"		&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x28);
-			else if (f1_line->name.content == "XOR"		&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x30);
-			else if (f1_line->name.content == "CMP"		&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x38);
-			else if (f1_line->name.content == "TEST"	&& f1_mode != 0) instList += TEST(*f1_line, f1_mode);
-			else if (f1_line->name.content == "MUL"		&& f1_mode != 0) instList += MUL(*f1_line, f1_mode, 0x20);
-			else if (f1_line->name.content == "SMUL"	&& f1_mode != 0) instList += MUL(*f1_line, f1_mode, 0x28);
-			else if (f1_line->name.content == "DIV"		&& f1_mode != 0) instList += MUL(*f1_line, f1_mode, 0x30);
-			else if (f1_line->name.content == "SDIV"	&& f1_mode != 0) instList += MUL(*f1_line, f1_mode, 0x38);
-			else if (f1_line->name.content == "MOV"		&& f1_mode != 0) instList += MOV(*f1_line, f1_mode);
-			else if (f1_line->name.content == "XCHG"	&& f1_mode != 0) instList += XCHG(*f1_line, f1_mode);
-			else if (f1_line->name.content == "PUSH"	&& f1_mode != 0) instList += PUSH(*f1_line, f1_mode);
-			else if (f1_line->name.content == "POP"		&& f1_mode != 0) instList += POP(*f1_line, f1_mode);
+			else if (f1_name == "NOT" 	&& f1_mode != 0) instList += ALTER(*f1_line, f1_mode, 0xF6, 0x10);
+			else if (f1_name == "NEG"	&& f1_mode != 0) instList += ALTER(*f1_line, f1_mode, 0xF6, 0x18);
+			else if (f1_name == "INC"	&& f1_mode != 0) instList += ALTER(*f1_line, f1_mode, 0xFE, 0x00);
+			else if (f1_name == "DEC"	&& f1_mode != 0) instList += ALTER(*f1_line, f1_mode, 0xFE, 0x08);
+			else if (f1_name == "ROL"	&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x00);
+			else if (f1_name == "ROR"	&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x08);
+			else if (f1_name == "RCL"	&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x10);
+			else if (f1_name == "RCR"	&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x18);
+			else if (f1_name == "SHL"	&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x20);
+			else if (f1_name == "SHR"	&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x28);
+			else if (f1_name == "SAL"	&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x30);
+			else if (f1_name == "SAR"	&& f1_mode != 0) instList += SHIFT(*f1_line, f1_mode, 0x38);
+			else if (f1_name == "ADD"	&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x00);
+			else if (f1_name == "OR"	&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x08);
+			else if (f1_name == "ADC"	&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x10);
+			else if (f1_name == "SBB"	&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x18);
+			else if (f1_name == "AND"	&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x20);
+			else if (f1_name == "SUB"	&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x28);
+			else if (f1_name == "XOR"	&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x30);
+			else if (f1_name == "CMP"	&& f1_mode != 0) instList += ARITH(*f1_line, f1_mode, 0x38);
+			else if (f1_name == "TEST"	&& f1_mode != 0) instList += TEST(*f1_line, f1_mode);
+			else if (f1_name == "MUL"	&& f1_mode != 0) instList += MUL(*f1_line, f1_mode, 0x20);
+			else if (f1_name == "SMUL"	&& f1_mode != 0) instList += MUL(*f1_line, f1_mode, 0x28);
+			else if (f1_name == "DIV"	&& f1_mode != 0) instList += MUL(*f1_line, f1_mode, 0x30);
+			else if (f1_name == "SDIV"	&& f1_mode != 0) instList += MUL(*f1_line, f1_mode, 0x38);
+			else if (f1_name == "MOV"	&& f1_mode != 0) instList += MOV(*f1_line, f1_mode);
+			else if (f1_name == "MOVSX"	&& f1_mode != 0 && f1_mode2 != 0) instList += MOVX(*f1_line, f1_mode, f1_mode2, 0x08);
+			else if (f1_name == "MOVZX"	&& f1_mode != 0 && f1_mode2 != 0) instList += MOVX(*f1_line, f1_mode, f1_mode2, 0x00);
+			else if (f1_name == "XCHG"	&& f1_mode != 0) instList += XCHG(*f1_line, f1_mode);
+			else if (f1_name == "PUSH"	&& f1_mode != 0) instList += PUSH(*f1_line, f1_mode);
+			else if (f1_name == "POP"	&& f1_mode != 0) instList += POP(*f1_line, f1_mode);
 
-			else if (f1_line->name.content == "LEA"		) instList += LEA(*f1_line);
+			else if (f1_name == "LEA"	) instList += LEA(*f1_line);
 
-			else if (f1_line->name.content == "JMP"		) instList += JUMP(*f1_line);
-			else if (f1_line->name.content == "CALL"	) instList += CALL(*f1_line);
-			else if (f1_line->name.content == "RETN"	) instList += RETN(*f1_line);
+			else if (f1_name == "JMP"	) instList += JUMP(*f1_line);
+			else if (f1_name == "CALL"	) instList += CALL(*f1_line);
+			else if (f1_name == "RETN"	) instList += RETN(*f1_line);
 			
-			else if	(f1_line->name.content == "STACK_ENTER"	) instList += FENTER(*f1_line);
-			else if (f1_line->name.content == "STACK_LEAVE"	) instList += FLEAVE(*f1_line);
-			else if (f1_line->name.content == "STACK_GROW"	) instList += FGROW(*f1_line);
-			else if (f1_line->name.content == "STACK_SHRINK") instList += FSHRINK(*f1_line);
-			else if (f1_line->name.content == "STACK_ALIGN"	) instList += FALIGN(*f1_line);
+			else if	(f1_name == "STACK_ENTER"	) instList += FENTER(*f1_line);
+			else if (f1_name == "STACK_LEAVE"	) instList += FLEAVE(*f1_line);
+			else if (f1_name == "STACK_GROW"	) instList += FGROW(*f1_line);
+			else if (f1_name == "STACK_SHRINK"	) instList += FSHRINK(*f1_line);
+			else if (f1_name == "STACK_ALIGN"	) instList += FALIGN(*f1_line);
 
-			else if (f1_line->name.content == "CJMP"	&& f1_cond != 0x80) instList += CJUMP(*f1_line, f1_cond);
-			else if (f1_line->name.content == "CSET"	&& f1_cond != 0x80) instList += CSET(*f1_line, f1_cond);
-			else if (f1_line->name.content == "CMOV"	&& f1_cond != 0x80 && f1_mode > 'B') instList += CMOV(*f1_line, f1_cond, f1_mode);
+			else if (f1_name == "CJMP"	&& f1_cond != 0x80) instList += CJUMP(*f1_line, f1_cond);
+			else if (f1_name == "CSET"	&& f1_cond != 0x80) instList += CSET(*f1_line, f1_cond);
+			else if (f1_name == "CMOV"	&& f1_cond != 0x80 && f1_mode > 'B') instList += CMOV(*f1_line, f1_cond, f1_mode);
 
-			else if (f1_line->name.content == "SHLD"	&& f1_mode > 'B') instList += SHIFTD(*f1_line, f1_mode, 0xA4);
-			else if (f1_line->name.content == "SHRD"	&& f1_mode > 'B') instList += SHIFTD(*f1_line, f1_mode, 0xAC);
+			else if (f1_name == "SHLD"	&& f1_mode > 'B') instList += SHIFTD(*f1_line, f1_mode, 0xA4);
+			else if (f1_name == "SHRD"	&& f1_mode > 'B') instList += SHIFTD(*f1_line, f1_mode, 0xAC);
 
-			else if (f1_line->name.content == "BT"		&& f1_mode > 'B') instList += BT(*f1_line, f1_mode, 0x00);
-			else if (f1_line->name.content == "BTS"		&& f1_mode > 'B') instList += BT(*f1_line, f1_mode, 0x08);
-			else if (f1_line->name.content == "BTR"		&& f1_mode > 'B') instList += BT(*f1_line, f1_mode, 0x10);
-			else if (f1_line->name.content == "BTC"		&& f1_mode > 'B') instList += BT(*f1_line, f1_mode, 0x18);
+			else if (f1_name == "BT"	&& f1_mode > 'B') instList += BT(*f1_line, f1_mode, 0x00);
+			else if (f1_name == "BTS"	&& f1_mode > 'B') instList += BT(*f1_line, f1_mode, 0x08);
+			else if (f1_name == "BTR"	&& f1_mode > 'B') instList += BT(*f1_line, f1_mode, 0x10);
+			else if (f1_name == "BTC"	&& f1_mode > 'B') instList += BT(*f1_line, f1_mode, 0x18);
 
-			else if (f1_line->name.content == "BSF"		&& f1_mode > 'B') instList += BS(*f1_line, f1_mode, 0x00);
-			else if (f1_line->name.content == "BSR"		&& f1_mode > 'B') instList += BS(*f1_line, f1_mode, 0x01);
+			else if (f1_name == "BSF"	&& f1_mode > 'B') instList += BS(*f1_line, f1_mode, 0x00);
+			else if (f1_name == "BSR"	&& f1_mode > 'B') instList += BS(*f1_line, f1_mode, 0x01);
+
+			else if (f1_name == "BCNT"	&& f1_mode > 'B') instList += CNT(*f1_line, f1_mode, 0x08);
+			else if (f1_name == "ZCNT"	&& f1_mode > 'B') instList += CNT(*f1_line, f1_mode, 0x0D);
 
 			else throw(traceLine(*solved, *f1_line, "Wrong method '" + f1_line->name.content + "'."));
 
@@ -366,11 +388,12 @@ namespace ANTHRACITE {
 			throw(traceLine(*solved, i_line, "File '" + f_d->value.value + "' not found."));
 		}
 
-		BYTE f_char;
+		char f_char;
 
-		while (f_file >> f_char) {
+		while (f_file.get(f_char)) {
 
-			o_instruction.binary += f_char;
+			o_instruction.binary += BYTE(f_char);
+
 		}
 
 		return o_instruction;
@@ -398,6 +421,49 @@ namespace ANTHRACITE {
 		}
 
 		o_instruction.binary += f_d->value.value;
+
+		return o_instruction;
+	}
+	
+	INST ENCODED::SPACE(LINE &i_line) {
+
+		INST o_instruction;
+
+		if (i_line.argList.size() != 1) {
+
+			throw(traceLine(*solved, i_line, "Wrong argument number."));
+		}
+
+		ARGV *f_d = arg(i_line.argList, "d", 0);
+
+		if (f_d == 0) {
+
+			throw(traceLine(*solved, i_line, "Argument 'd' missing."));
+		}
+
+		if (f_d->name[0] != '#') {
+
+			throw(traceLine(*solved, i_line, "Argument 'd' having wrong type."));
+		}
+
+		DWORD f_num = f_d->value.value[0];
+
+		if (f_d->value.value.size() >= 2) f_num |= (f_d->value.value[1] << 8);
+		if (f_d->value.value.size() >= 3) f_num |= (f_d->value.value[2] << 16);
+		if (f_d->value.value.size() >= 4) f_num |= (f_d->value.value[3] << 24);
+
+		if (f_d->value.value.size() > 4) {
+
+			throw(traceLine(*solved, i_line, "Argument 'd' being too big."));
+		}
+
+		while (f_num > 0) {
+
+			o_instruction.binary += BYTE(0);
+
+			f_num --;
+
+		}		
 
 		return o_instruction;
 	}
@@ -611,7 +677,7 @@ namespace ANTHRACITE {
 					f_op2 += 0x12;
 
 				}
-				else throw(traceLine(*solved, i_line, "Argument 'v' not being %1."));
+				else throw(traceLine(*solved, i_line, "Argument 'v' not being %11."));
 			}
 			else if (f_v->name[0] == '#') {
 
@@ -708,7 +774,7 @@ namespace ANTHRACITE {
 					f_v->value.value.empty();
 
 				}
-				else throw(traceLine(*solved, i_line, "Argument 'v' not being %1."));
+				else throw(traceLine(*solved, i_line, "Argument 'v' not being %11."));
 			}
 			else if (f_v->name[0] == '#') {
 
@@ -888,6 +954,58 @@ namespace ANTHRACITE {
 		else throw(traceLine(*solved, i_line, "Wrong argument number."));
 
 		return o_instruction;
+	}
+
+	INST ENCODED::CNT(LINE& i_line, BYTE i_mode, BYTE i_op1) {
+
+		INST o_instruction;
+
+		if (i_mode == 'W') {
+
+			o_instruction.binary += BYTE(0x66);
+
+		}
+
+		o_instruction.binary += BYTE(0xF3);
+
+		if (i_line.argList.size() == 2) {
+
+			ARGV *f_t = arg(i_line.argList, "t", 0);
+
+			if (f_t == 0)
+				throw(traceLine(*solved, i_line, "Argument 't' missing."));
+
+			if (f_t->name[0] != '%')
+				throw(traceLine(*solved, i_line, "Argument 't' having wrong type."));
+
+			ARGV *f_s = arg(i_line.argList, "s", 1);
+
+			if (f_s == 0)
+				throw(traceLine(*solved, i_line, "Argument 's' missing."));
+
+			if (f_s->name[0] == '%') {
+
+				o_instruction.binary += RR(i_line, i_mode, f_s, f_t, 0xB0 | i_op1, 0, true);
+
+			}
+			else if (f_s->name[0] == '$') {
+
+				o_instruction.binary += MR(i_line, i_mode, f_s, f_t, 0xB0 | i_op1, 0, true);
+
+				if (f_s->value.is()) {
+
+					o_instruction.reqSym = SYM(f_s->value, s_ERR, o_instruction.binary.size() - 4);
+
+				}
+				
+			}
+			else throw(traceLine(*solved, i_line, "Argument 's' having wrong type."));
+
+		}
+		else throw(traceLine(*solved, i_line, "Wrong argument number."));
+
+		return o_instruction;
+
 	}
 
 	INST ENCODED::ARITH(LINE &i_line, BYTE i_mode, BYTE i_op1) {
@@ -1079,12 +1197,14 @@ namespace ANTHRACITE {
 
 		INST o_instruction;
 
-		if (i_line.argList.size() == 1) {
+		ARGV *f_s = arg(i_line.argList, "s", 0);
 
-			ARGV *f_s = arg(i_line.argList, "s", 0);
+		if (f_s == 0)
+			throw(traceLine(*solved, i_line, "Argument 's' missing."));
 
-			if (f_s == 0)
-				throw(traceLine(*solved, i_line, "Argument 's' missing."));
+		ARGV *f_v = arg(i_line.argList, "v", 1);
+
+		if (i_line.argList.size() == 1 || !f_v || f_v->value.value.isZero()) {
 
 			if 	(f_s->name[0] == '%') {
 
@@ -1105,12 +1225,8 @@ namespace ANTHRACITE {
 
 					o_instruction.binary += R(i_line, i_mode, f_s, 0xF6, i_op2);
 
-					if (i_op2 >= 0x30) {
-
-						o_instruction.binary += BYTE(0x88);
-						o_instruction.binary += BYTE(0xE2);
-
-					}
+					o_instruction.binary += BYTE(0x88);
+					o_instruction.binary += BYTE(0xE2);
 
 				}
 				else if (i_mode == 'W') {
@@ -1189,12 +1305,8 @@ namespace ANTHRACITE {
 
 					o_instruction.binary += M(i_line, i_mode, f_s, 0xF6, i_op2);
 
-					if (i_op2 >= 0x30) {
-
-						o_instruction.binary += BYTE(0x88);
-						o_instruction.binary += BYTE(0xE2);
-
-					}
+					o_instruction.binary += BYTE(0x88);
+					o_instruction.binary += BYTE(0xE2);
 
 				}
 				else if (i_mode == 'W') {
@@ -1264,20 +1376,13 @@ namespace ANTHRACITE {
 		}
 		else if (i_line.argList.size() == 2) {
 
-			ARGV *f_s = arg(i_line.argList, "s", 0);
-
-			if (f_s == 0)
-				throw(traceLine(*solved, i_line, "Argument 's' missing."));
-
-			ARGV *f_v = arg(i_line.argList, "v", 1);
-
 			if (f_v == 0)
 				throw(traceLine(*solved, i_line, "Argument 'v' missing."));
 
 			if (f_v->name[0] == '%') {
 
 				if (f_v->value.value[0] != 1)
-					throw(traceLine(*solved, i_line, "Argument 'v' not being %1."));
+					throw(traceLine(*solved, i_line, "Argument 'v' not being %11."));
 
 			}
 			else if (f_v->name[0] == '#') {
@@ -1370,14 +1475,9 @@ namespace ANTHRACITE {
 						}
 
 					}
-					else {
 					
-						o_instruction.binary += BYTE(0x88);
-						o_instruction.binary += BYTE(0xE2);
-
-					}
-
-					std::cout << o_instruction.binary.hex(" ").c() << std::endl;
+					o_instruction.binary += BYTE(0x88);
+					o_instruction.binary += BYTE(0xE2);
 
 				}
 				else if (i_mode == 'W') {
@@ -1448,22 +1548,7 @@ namespace ANTHRACITE {
 							o_instruction.binary += BYTE(0x66);
 							o_instruction.binary += BYTE(0x0F);
 							o_instruction.binary += BYTE(0xAD);
-							o_instruction.binary += BYTE(0xC2);
-							o_instruction.binary += BYTE(0x66);
-							o_instruction.binary += BYTE(0xD3);
-							o_instruction.binary += BYTE(0xE8);
-
-						}
-						else if (f_v->value.value[0] == 1) {
-
-							o_instruction.binary += BYTE(0x66);
-							o_instruction.binary += BYTE(0x0F);
-							o_instruction.binary += BYTE(0xAC);
-							o_instruction.binary += BYTE(0xC2);
-							o_instruction.binary += f_v->value.value;
-							o_instruction.binary += BYTE(0x66);
-							o_instruction.binary += BYTE(0xD1);
-							o_instruction.binary += BYTE(0xE8);
+							o_instruction.binary += BYTE(0xD0);
 
 						}
 						else {
@@ -1471,11 +1556,7 @@ namespace ANTHRACITE {
 							o_instruction.binary += BYTE(0x66);
 							o_instruction.binary += BYTE(0x0F);
 							o_instruction.binary += BYTE(0xAC);
-							o_instruction.binary += BYTE(0xC2);
-							o_instruction.binary += f_v->value.value;
-							o_instruction.binary += BYTE(0x66);
-							o_instruction.binary += BYTE(0xC1);
-							o_instruction.binary += BYTE(0xE8);
+							o_instruction.binary += BYTE(0xD0);
 							o_instruction.binary += f_v->value.value;
 
 						}
@@ -1540,29 +1621,14 @@ namespace ANTHRACITE {
 
 							o_instruction.binary += BYTE(0x0F);
 							o_instruction.binary += BYTE(0xAD);
-							o_instruction.binary += BYTE(0xC2);
-							o_instruction.binary += BYTE(0xD3);
-							o_instruction.binary += BYTE(0xE8);
-
-						}
-						else if (f_v->value.value[0] == 1) {
-
-							o_instruction.binary += BYTE(0x0F);
-							o_instruction.binary += BYTE(0xAC);
-							o_instruction.binary += BYTE(0xC2);
-							o_instruction.binary += f_v->value.value;
-							o_instruction.binary += BYTE(0xD1);
-							o_instruction.binary += BYTE(0xE8);
+							o_instruction.binary += BYTE(0xD0);
 
 						}
 						else {
 
 							o_instruction.binary += BYTE(0x0F);
 							o_instruction.binary += BYTE(0xAC);
-							o_instruction.binary += BYTE(0xC2);
-							o_instruction.binary += f_v->value.value;
-							o_instruction.binary += BYTE(0xC1);
-							o_instruction.binary += BYTE(0xE8);
+							o_instruction.binary += BYTE(0xD0);
 							o_instruction.binary += f_v->value.value;
 
 						}
@@ -1635,22 +1701,7 @@ namespace ANTHRACITE {
 							o_instruction.binary += BYTE(0x48);
 							o_instruction.binary += BYTE(0x0F);
 							o_instruction.binary += BYTE(0xAD);
-							o_instruction.binary += BYTE(0xC2);
-							o_instruction.binary += BYTE(0x48);
-							o_instruction.binary += BYTE(0xD3);
-							o_instruction.binary += BYTE(0xE8);
-
-						}
-						else if (f_v->value.value[0] == 1) {
-
-							o_instruction.binary += BYTE(0x48);
-							o_instruction.binary += BYTE(0x0F);
-							o_instruction.binary += BYTE(0xAC);
-							o_instruction.binary += BYTE(0xC2);
-							o_instruction.binary += f_v->value.value;
-							o_instruction.binary += BYTE(0x48);
-							o_instruction.binary += BYTE(0xD1);
-							o_instruction.binary += BYTE(0xE8);
+							o_instruction.binary += BYTE(0xD0);
 
 						}
 						else {
@@ -1658,11 +1709,7 @@ namespace ANTHRACITE {
 							o_instruction.binary += BYTE(0x48);
 							o_instruction.binary += BYTE(0x0F);
 							o_instruction.binary += BYTE(0xAC);
-							o_instruction.binary += BYTE(0xC2);
-							o_instruction.binary += f_v->value.value;
-							o_instruction.binary += BYTE(0x48);
-							o_instruction.binary += BYTE(0xC1);
-							o_instruction.binary += BYTE(0xE8);
+							o_instruction.binary += BYTE(0xD0);
 							o_instruction.binary += f_v->value.value;
 
 						}
@@ -1744,14 +1791,9 @@ namespace ANTHRACITE {
 						}
 
 					}
-					else {
-					
-						o_instruction.binary += BYTE(0x88);
-						o_instruction.binary += BYTE(0xE2);
-
-					}
-
-					std::cout << o_instruction.binary.hex(" ").c() << std::endl;
+				
+					o_instruction.binary += BYTE(0x88);
+					o_instruction.binary += BYTE(0xE2);
 
 				}
 				else if (i_mode == 'W') {
@@ -2626,6 +2668,102 @@ namespace ANTHRACITE {
 		return o_instruction;
 	}
 
+	INST ENCODED::MOVX(LINE& i_line, BYTE i_mode1, BYTE i_mode2, BYTE i_op1) {
+
+		INST o_instruction;
+
+		if (i_mode2 == 'W') {
+
+			o_instruction.binary += BYTE(0x66);
+
+		}
+
+		if (i_line.argList.size() == 2) {
+
+			ARGV *f_t = arg(i_line.argList, "t", 0);
+
+			if (f_t == 0)
+				throw(traceLine(*solved, i_line, "Argument 't' missing."));
+
+			if (f_t->name[0] != '%')
+				throw(traceLine(*solved, i_line, "Argument 't' having wrong type."));
+
+			ARGV *f_s = arg(i_line.argList, "s", 1);
+
+			if (f_s == 0)
+				throw(traceLine(*solved, i_line, "Argument 's' missing."));
+
+			if (f_s->name[0] == '%') {
+
+				if 	(i_mode1 == 'B') {
+
+					o_instruction.binary += RR(i_line, i_mode2, f_s, f_t, 0xB6 | i_op1, 0, true);
+
+				}
+				else if (i_mode1 == 'W') {
+
+					o_instruction.binary += RR(i_line, i_mode2, f_s, f_t, 0xB7 | i_op1, 0, true);
+
+				}
+				else if (i_mode1 == 'D') {
+
+					if (i_op1 == 0x00) {
+
+						o_instruction.binary += RR(i_line, 'D', f_s, f_t, 0x8B, 0, false);
+
+					}
+					else {
+
+						o_instruction.binary += RR(i_line, 'Q', f_s, f_t, 0x63, 0, false);
+
+					}
+
+				}
+
+			}
+			else if (f_s->name[0] == '$') {
+
+				if 	(i_mode1 == 'B') {
+
+					o_instruction.binary += MR(i_line, i_mode2, f_s, f_t, 0xB6 | i_op1, 0, true);
+
+				}
+				else if (i_mode1 == 'W') {
+
+					o_instruction.binary += MR(i_line, i_mode2, f_s, f_t, 0xB7 | i_op1, 0, true);
+
+				}
+				else if (i_mode1 == 'D') {
+
+					if (i_op1 == 0x00) {
+
+						o_instruction.binary += MR(i_line, 'D', f_s, f_t, 0x8B, 0, false);
+
+					}
+					else {
+
+						o_instruction.binary += MR(i_line, 'Q', f_s, f_t, 0x63, 0, false);
+
+					}
+
+				}
+
+				if (f_s->value.is()) {
+
+					o_instruction.reqSym = SYM(f_s->value, s_ERR, o_instruction.binary.size() - 4);
+
+				}
+				
+			}
+			else throw(traceLine(*solved, i_line, "Argument 's' having wrong type."));
+
+		}
+		else throw(traceLine(*solved, i_line, "Wrong argument number."));
+
+		return o_instruction;
+
+	}
+
 	INST ENCODED::XCHG(LINE &i_line, BYTE i_mode) {
 
 		INST o_instruction;
@@ -3148,17 +3286,25 @@ namespace ANTHRACITE {
 
 	BYTE ENCODED::reg(ARGV *i_r) {
 
+		/*
+			Register number from argument
+		*/
+
 		BYTE o_byte = i_r->value.value[0];
 
-		if (o_byte >= 4) {
-
-			o_byte += 2;
-		}
+		if		(o_byte < 8 ) o_byte += 8;
+		else if (o_byte < 10) o_byte -= 2;
+		else if (o_byte < 14) o_byte -= 10;
+		else throw(tracePointer(*solved->parsed->lexed->loaded, i_r->value.pointer, "Invalid register."));
 
 		return o_byte;
 	}
 
 	STRING ENCODED::M(LINE &i_line, BYTE i_mode, ARGV *i_m, BYTE i_op1, BYTE i_op2, BOOL i_sec) {
+
+		/*
+			Memory operand scheme
+		*/
 
 		STRING o_string;
 
@@ -3314,6 +3460,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ENCODED::MR(LINE &i_line, BYTE i_mode, ARGV *i_m, ARGV *i_r, BYTE i_op1, BYTE i_op2, BOOL i_sec) {
+
+		/*
+			Memory + register operand scheme
+		*/
 
 		STRING o_string;
 
@@ -3498,6 +3648,10 @@ namespace ANTHRACITE {
 
 	STRING ENCODED::R(LINE &i_line, BYTE i_mode, ARGV *i_r, BYTE i_op1, BYTE i_op2, BOOL i_sec) {
 
+		/*
+			Register operand scheme
+		*/
+
 		STRING o_string;
 
 		BYTE f_r = reg(i_r);
@@ -3527,6 +3681,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ENCODED::RR(LINE &i_line, BYTE i_mode, ARGV *i_r1, ARGV *i_r2, BYTE i_op1, BYTE i_op2, BOOL i_sec) {
+
+		/*
+			Register + register operand scheme
+		*/
 
 		STRING o_string;
 
@@ -3562,6 +3720,10 @@ namespace ANTHRACITE {
 
 	STRING ENCODED::OREX_00R(BYTE i_r3, BYTE i_v) {
 
+		/*
+			Optional REX byte
+		*/
+
 		STRING o_string;
 
 		if (i_r3 > 7) {
@@ -3573,6 +3735,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ENCODED::OREX_0R0(BYTE i_r2, BYTE i_v) {
+
+		/*
+			Optional REX byte
+		*/
 
 		STRING o_string;
 
@@ -3586,6 +3752,10 @@ namespace ANTHRACITE {
 
 	STRING ENCODED::OREX_R00(BYTE i_r1, BYTE i_v) {
 
+		/*
+			Optional REX byte
+		*/
+
 		STRING o_string;
 
 		if (i_r1 > 7) {
@@ -3597,6 +3767,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ENCODED::OREX_0RR(BYTE i_r2, BYTE i_r3, BYTE i_v) {
+
+		/*
+			Optional REX byte
+		*/
 
 		STRING o_string;
 
@@ -3610,6 +3784,10 @@ namespace ANTHRACITE {
 
 	STRING ENCODED::OREX_R0R(BYTE i_r1, BYTE i_r3, BYTE i_v) {
 
+		/*
+			Optional REX byte
+		*/
+
 		STRING o_string;
 
 		if (i_r1 > 7 || i_r3 > 7) {
@@ -3621,6 +3799,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ENCODED::OREX_RR0(BYTE i_r1, BYTE i_r2, BYTE i_v) {
+
+		/*
+			Optional REX byte
+		*/
 
 		STRING o_string;
 
@@ -3634,6 +3816,10 @@ namespace ANTHRACITE {
 
 	STRING ENCODED::OREX_RRR(BYTE i_r1, BYTE i_r2, BYTE i_r3, BYTE i_v) {
 
+		/*
+			Optional REX byte
+		*/
+
 		STRING o_string;
 
 		if (i_r1 > 7 || i_r2 > 7 || i_r3 > 7) {
@@ -3646,6 +3832,10 @@ namespace ANTHRACITE {
 
 	STRING ENCODED::REX_000(BYTE i_v) {
 
+		/*
+			Mandatory REX byte
+		*/
+
 		STRING o_string;
 
 		o_string += BYTE(0x40 | i_v);
@@ -3654,6 +3844,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ENCODED::REX_00R(BYTE i_r3, BYTE i_v) {
+
+		/*
+			Mandatory REX byte
+		*/
 
 		STRING o_string;
 
@@ -3664,6 +3858,10 @@ namespace ANTHRACITE {
 
 	STRING ENCODED::REX_0R0(BYTE i_r2, BYTE i_v) {
 
+		/*
+			Mandatory REX byte
+		*/
+
 		STRING o_string;
 
 		o_string += BYTE(0x40 | ((i_r2 & 0b1000) >> 2) | i_v);
@@ -3672,6 +3870,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ENCODED::REX_R00(BYTE i_r1, BYTE i_v) {
+
+		/*
+			Mandatory REX byte
+		*/
 
 		STRING o_string;
 
@@ -3682,6 +3884,10 @@ namespace ANTHRACITE {
 
 	STRING ENCODED::REX_0RR(BYTE i_r2, BYTE i_r3, BYTE i_v) {
 
+		/*
+			Mandatory REX byte
+		*/
+
 		STRING o_string;
 
 		o_string += BYTE(0x40 | ((i_r2 & 0b1000) >> 2) | ((i_r3 & 0b1000) >> 3) | i_v);
@@ -3690,6 +3896,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ENCODED::REX_R0R(BYTE i_r1, BYTE i_r3, BYTE i_v) {
+
+		/*
+			Mandatory REX byte
+		*/
 
 		STRING o_string;
 
@@ -3700,6 +3910,10 @@ namespace ANTHRACITE {
 
 	STRING ENCODED::REX_RR0(BYTE i_r1, BYTE i_r2, BYTE i_v) {
 
+		/*
+			Mandatory REX byte
+		*/
+
 		STRING o_string;
 
 		o_string += BYTE(0x40 | ((i_r1 & 0b1000) >> 1) | ((i_r2 & 0b1000) >> 2) | i_v);
@@ -3708,6 +3922,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ENCODED::REX_RRR(BYTE i_r1, BYTE i_r2, BYTE i_r3, BYTE i_v) {
+
+		/*
+			Mandatory REX byte
+		*/
 
 		STRING o_string;
 
@@ -3718,6 +3936,10 @@ namespace ANTHRACITE {
 
 	STRING ENCODED::ARG_00(BYTE i_v) {
 
+		/*
+			void argument byte
+		*/
+
 		STRING o_string;
 
 		o_string += BYTE(i_v);
@@ -3726,6 +3948,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ENCODED::ARG_0R(BYTE i_r2, BYTE i_v) {
+
+		/*
+			right register argument byte
+		*/
 
 		STRING o_string;
 
@@ -3736,6 +3962,10 @@ namespace ANTHRACITE {
 
 	STRING ENCODED::ARG_R0(BYTE i_r1, BYTE i_v) {
 
+		/*
+			left register argument byte
+		*/
+
 		STRING o_string;
 
 		o_string += BYTE(((i_r1 << 3) & 0b00111000) | i_v);
@@ -3744,6 +3974,10 @@ namespace ANTHRACITE {
 	}
 
 	STRING ENCODED::ARG_RR(BYTE i_r1, BYTE i_r2, BYTE i_v) {
+
+		/*
+			both register argument byte
+		*/
 
 		STRING o_string;
 

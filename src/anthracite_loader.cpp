@@ -5,6 +5,14 @@ namespace ANTHRACITE {
 	LOADED::LOADED(STRING i_filename, LIST<STRING> i_pathList) : LOADED(i_filename, i_pathList, true) {}
 
 	LOADED::LOADED(STRING i_filename, LIST<STRING> i_pathList, BOOL i_root) : source(), traceList(), linkList(), includeList() {
+
+		/*
+			Load and merge the codebase
+			Handle macros and linker's arguments
+			Remove whitespaces and comments
+		*/
+
+		//Open target file
 		
 		std::ifstream f_file(i_filename.c(), std::ifstream::binary);
 
@@ -29,13 +37,25 @@ namespace ANTHRACITE {
 		DWORD f_line = 1;
 		DWORD f_column = 0;
 
+		//Read file
+
 		while (f_file.get(f_char)) {
 
-			if		(f_char == '\n') {f_line ++; f_column = 0;}
+			//Keep traceback
+
+			if		(f_char == '\n') {
+				
+				f_line ++;
+				
+				f_column = 0;
+				
+			}
 			else if	(f_char == '\t') f_column += 4;
 			else	f_column ++;
 
 			if		(f_char == '<') {
+
+				//Execute macro
 
 				STRING f1_macroMode;
 
@@ -65,6 +85,8 @@ namespace ANTHRACITE {
 
 				if (f1_include) {
 
+					//Include lib
+
 					if (std::filesystem::path(f1_macroContent.c()).extension() == "") {
 
 						f1_macroContent = std::filesystem::path(f1_macroContent.c()).replace_extension(".acs").string();
@@ -88,6 +110,8 @@ namespace ANTHRACITE {
 						}
 
 					}
+
+					//Include only in root block
 
 					if (f_blockLevel != f_rootList[-1]) {
 
@@ -161,13 +185,24 @@ namespace ANTHRACITE {
 				}
 
 			}
-			else if	(f_char == '/' && f_file.peek() == '*') {
+			else if	(f_char == '/' && (f_file.peek() == '*' || f_file.peek() == '/')) {
+
+				//Remove comment
 
 				f_file.get(f_char);
 
-				while (f_file.get(f_char) && (f_char != '*' || f_file.peek() != '/')) continue;
+				if (f_char == '*') {
 
-				f_file.get(f_char);
+					while (f_file.get(f_char) && (f_char != '*' || f_file.peek() != '/')) continue;
+
+					f_file.get(f_char);
+
+				}
+				else {
+
+					while (f_file.get(f_char) && f_char != '\n') continue;
+
+				}
 
 				traceList += TRACE(source.size(), i_filename, f_file.tellg());
 
@@ -177,6 +212,8 @@ namespace ANTHRACITE {
 				source += f_char;
 
 				if		(f_char == '"') {
+
+					//Keep strings
 
 					while (f_file.get(f_char) && f_char != '"') {
 						
@@ -189,7 +226,12 @@ namespace ANTHRACITE {
 					if (f_char == '"') source += f_char;
 
 				}
+
+				//Keep track of include location
+
 				else if (f_char == '{') {
+
+					//Enter regular block
 
 					f_blockLevel ++;
 
@@ -205,6 +247,8 @@ namespace ANTHRACITE {
 
 				}
 				else if (f_char == '}') {
+
+					//Leave block
 
 					if (f_blockLevel != 0) {
 
@@ -223,9 +267,13 @@ namespace ANTHRACITE {
 				}
 				else if (f_char == '.') {
 
+					//Enter root block
+
 					DWORD f1_pos = f_file.tellg();
 
 					while (f_file.get(f_char) && f_char != ';') {
+
+						//Check for false alarm
 
 						if		(f_char == '(') {
 
@@ -275,6 +323,12 @@ namespace ANTHRACITE {
 
 	VOID LOADED::futureInclude(STRING i_filename, LIST<STRING>& i_includeList) {
 
+		/*
+			Append an include to the wait list
+		*/
+
+		//Avoid duplicate
+
 		for (STRING* f2_include = i_includeList.begin(); f2_include < i_includeList.end(); f2_include ++) {
 
 			if (*f2_include == i_filename) {
@@ -291,6 +345,12 @@ namespace ANTHRACITE {
 
 	VOID LOADED::include(STRING i_filename, LIST<STRING> i_pathList, LIST<STRING>& i_includeList) {
 
+		/*
+			Merge an include
+		*/
+
+		//Avoid duplicate
+
 		for (STRING* f1_include = i_includeList.begin(); f1_include < i_includeList.end(); f1_include ++) {
 
 			if (*f1_include == i_filename) {
@@ -305,15 +365,23 @@ namespace ANTHRACITE {
 
 		LOADED f_loaded(i_filename, i_pathList, false);
 
+		//Shift lib traces
+
 		for (TRACE* f1_trace = f_loaded.traceList.begin(); f1_trace < f_loaded.traceList.end(); f1_trace ++) {
 
 			f1_trace->start += source.size();
 
 		}
 
+		//Append code
+
 		source = source + f_loaded.source;
 
+		//Append trace
+
 		traceList += f_loaded.traceList;
+
+		//Update linker arguments
 
 		if (entry.size() == 0) {
 
@@ -327,11 +395,15 @@ namespace ANTHRACITE {
 
 		}
 
+		//Handle linked libs
+
 		for (STRING* f1_link = f_loaded.linkList.begin(); f1_link < f_loaded.linkList.end(); f1_link ++) {
 
 			link(*f1_link);
 
 		}
+
+		//Handle new includes
 
 		for (STRING* f1_include = f_loaded.includeList.begin(); f1_include < f_loaded.includeList.end(); f1_include ++) {
 
@@ -342,6 +414,10 @@ namespace ANTHRACITE {
 	}
 
 	VOID LOADED::link(STRING i_filename) {
+
+		/*
+			Link a lib
+		*/
 
 		for (STRING* f1_link = linkList.begin(); f1_link < linkList.end(); f1_link ++) {
 
@@ -365,6 +441,10 @@ namespace ANTHRACITE {
 
 	ERROR tracePointer(LOADED& i_loaded, BYTE* i_char, STRING i_message) {
 
+		/*
+			Trace an error from a char pointer
+		*/
+
 		if (
 			i_char < i_loaded.source.begin() ||
 			i_char >= i_loaded.source.end()
@@ -377,6 +457,8 @@ namespace ANTHRACITE {
 		DWORD f_charId = i_char - i_loaded.source.begin();
 
 		TRACE* f_trace = i_loaded.traceList.begin();
+
+		//Find responsible file
 
 		while (
 			f_trace < i_loaded.traceList.end() &&
@@ -401,6 +483,8 @@ namespace ANTHRACITE {
 
 		BOOL f_space = false;
 		BOOL f_macro = false;
+
+		//Count line and column
 
 		while (f_file.get(f_char)) {
 

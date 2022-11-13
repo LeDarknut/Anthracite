@@ -4,6 +4,11 @@ namespace ANTHRACITE {
 
 	SOLVED::SOLVED(PARSED& i_parsed) : parsed(&i_parsed), lineList() {
 
+		/*
+			Copy function block where the functions was called
+			Replace symbol by their true value
+		*/
+
 		EXPR f_root;
 
 		f_root.block = parsed->block;
@@ -19,6 +24,10 @@ namespace ANTHRACITE {
 	}
 
 	LIST<LINE> SOLVED::solve_block(LIST<EXPR*> i_scopeList, BLOCK i_block, LIST<TOKEN> i_forbidden) {
+
+		/*
+			Solve a block of expressions
+		*/
 		
 		LIST<LINE> o_lineList;
 		
@@ -203,6 +212,10 @@ namespace ANTHRACITE {
 
 	LIST<ARGV> SOLVED::argify(LIST<LIST<ARG>>& i_args) {
 
+		/*
+			Convert arguments to new format
+		*/
+
 		LIST<ARGV> o_argList;
 
 		for (LIST<ARG>* f1_argList = i_args.begin(); f1_argList < i_args.end(); f1_argList ++) {
@@ -315,6 +328,10 @@ namespace ANTHRACITE {
 
 	LIST<LIST<ARG>> SOLVED::solve_args(LIST<EXPR*> i_scopeList, LIST<LIST<ARG>>& i_args, LIST<ARG*> i_forbidden) {
 
+		/*
+			Solve an argument list
+		*/
+
 		LIST<LIST<ARG>> o_args = i_args;
 
 		for (LIST<ARG>* f1_argList = o_args.begin(); f1_argList < o_args.end(); f1_argList ++) {
@@ -332,6 +349,10 @@ namespace ANTHRACITE {
 	}
 
 	ARG SOLVED::solve_arg(LIST<EXPR*> i_scopeList, ARG& i_arg, LIST<ARG*> i_forbidden) {
+
+		/*
+			Solve a symbol
+		*/
 
 		ARG o_arg;
 
@@ -562,6 +583,69 @@ namespace ANTHRACITE {
 					}
 
 				}
+				else if (f_args[0][0].target[0].content == "MASK") {
+
+					DWORD f1_mask = 0;
+
+					if (o_arg.target[0].value.size() > 0) {
+
+						f1_mask += o_arg.target[0].value[0];
+
+					}
+					if (o_arg.target[0].value.size() > 1) {
+
+						f1_mask += o_arg.target[0].value[1] << 8;
+
+					}
+					if (o_arg.target[0].value.size() > 2) {
+
+						f1_mask += o_arg.target[0].value[2] << 16;
+
+					}
+					if (o_arg.target[0].value.size() > 3) {
+
+						f1_mask += o_arg.target[0].value[3] << 24;
+
+					}
+
+					o_arg.target[0].value.empty();
+
+					while (f1_mask > 0) {
+
+						if (f1_mask >= 8) {
+
+							o_arg.target[0].value += BYTE(0xFF);
+
+							f1_mask -= 8;
+
+							if (f1_mask == 0) {
+
+								o_arg.target[0].value += BYTE(0x00);
+
+								break;
+
+							}
+
+						}
+						else {
+
+							BYTE f1_byte = 0;
+
+							for (BYTE f2_bit = 0; f2_bit < f1_mask; f2_bit ++) {
+
+								f1_byte += (1 << f2_bit);
+
+							}
+
+							o_arg.target[0].value += f1_byte;
+
+							break;
+
+						}
+
+					}
+
+				}
 				else if (f_args[0][0].target[0].content == "NOT") {
 
 					for (BYTE* f2_byte = o_arg.target[0].value.begin(); f2_byte < o_arg.target[0].value.end(); f2_byte ++) {
@@ -664,6 +748,10 @@ namespace ANTHRACITE {
 
 	LIST<LIST<ARG>> SOLVED::solve_fargs(LIST<LIST<ARG>> i_fargs, LIST<LIST<ARG>> i_cargs) {
 
+		/*
+			Solve a function's argument list
+		*/
+
 		LIST<LIST<ARG>>& o_fargs = i_fargs;
 
 		LIST<LIST<ARG>>& f_cargsLeft = i_cargs;
@@ -740,6 +828,10 @@ namespace ANTHRACITE {
 	}
 
 	LIST<ARG> SOLVED::solve_fargList(LIST<ARG> i_fargList, LIST<ARG> i_cargList) {
+
+		/*
+			Solve alternative arguments of a function argument list
+		*/
 
 		LIST<ARG>& o_fargList = i_fargList;
 
@@ -884,7 +976,15 @@ namespace ANTHRACITE {
 
 		}
 
-		if (f_cargLeft.size() > 0) throw(BYTE(1));
+		for (ARG* f1_carg = f_cargLeft.begin(); f1_carg < f_cargLeft.end(); f1_carg ++) {
+
+			if (!f1_carg->isNul()) {
+
+				throw(BYTE(1));
+
+			}
+
+		}
 
 		for (ARG** f1_fargLeft = f_fargLeft.begin(); f1_fargLeft < f_fargLeft.end(); f1_fargLeft ++) {
 
@@ -912,6 +1012,10 @@ namespace ANTHRACITE {
 	}
 
 	TOKEN SOLVED::solve_section(LIST<EXPR*> i_scopeList, LIST<TOKEN> i_section) {
+
+		/*
+			Solve a section symbol
+		*/
 
 		LIST<FOUND> f_sectionFoundList;
 
@@ -951,6 +1055,10 @@ namespace ANTHRACITE {
 
 	ARG SOLVED::toArg(FOUND& i_found) {
 
+		/*
+			Convert found symbol to argument
+		*/
+
 		ARG o_arg;
 
 		if (i_found.arg) {
@@ -976,6 +1084,10 @@ namespace ANTHRACITE {
 
 	VOID SOLVED::nullArg(ARG& i_arg) {
 
+		/*
+			Set recursively an argument content to Null
+		*/
+
 		if (i_arg.isBox()) {
 
 			for (LIST<ARG>* f1_argList = i_arg.args.begin(); f1_argList < i_arg.args.end(); f1_argList ++) {
@@ -1000,6 +1112,10 @@ namespace ANTHRACITE {
 	}
 
 	BOOL SOLVED::isDifferent(FOUND& i_found, LIST<FOUND> i_foundList) {
+
+		/*
+			Check for contradictory values
+		*/
 
 		if (i_found.def) {
 
@@ -1033,6 +1149,10 @@ namespace ANTHRACITE {
 	}
 
 	BOOL SOLVED::isDifferent(ARG& i_arg1, ARG& i_arg2) {
+
+		/*
+			Check for contradictory values
+		*/
 
 		if (i_arg1.type != i_arg2.type ||
 			i_arg1.target.size() != i_arg2.target.size() ||
@@ -1070,6 +1190,10 @@ namespace ANTHRACITE {
 	}
 
 	LIST<FOUND> SOLVED::find_path(LIST<EXPR*> i_scopeList, LIST<TOKEN> i_path, LIST<FOUND> i_prefixed, LIST<ARG*> i_forbidden) {
+
+		/*
+			Follow a path
+		*/
 		
 		LIST<FOUND> o_foundList;
 
@@ -1174,6 +1298,10 @@ namespace ANTHRACITE {
 
 	LIST<FOUND> SOLVED::find_block(LIST<EXPR*> i_scopeList, LIST<TOKEN> i_path, LIST<FOUND> i_prefixed, LIST<ARG*> i_forbidden) {
 
+		/*
+			Follow a block path
+		*/
+
 		LIST<FOUND> o_foundList;
 
 		for (EXPR* f1_expr = i_scopeList[-1]->block.exprList.begin(); f1_expr < i_scopeList[-1]->block.exprList.end(); f1_expr ++) {
@@ -1198,6 +1326,10 @@ namespace ANTHRACITE {
 	}
 
 	LIST<FOUND> SOLVED::find_def(LIST<EXPR*> i_scopeList, LIST<TOKEN> i_path, LIST<FOUND> i_prefixed, LIST<ARG*> i_forbidden) {
+
+		/*
+			Folow a symbol path
+		*/
 
 		LIST<FOUND> o_foundList;
 
@@ -1249,6 +1381,10 @@ namespace ANTHRACITE {
 
 	LIST<FOUND> SOLVED::find_arg(LIST<EXPR*> i_scopeList, LIST<TOKEN> i_path, LIST<LIST<ARG>>& i_args, LIST<FOUND> i_prefixed, LIST<ARG*> i_forbidden) {
 
+		/*
+			Folow a path inside an argument list
+		*/
+
 		LIST<FOUND> o_foundList;
 
 		for (LIST<ARG>* f1_argList = i_args.begin(); f1_argList < i_args.end(); f1_argList ++) {
@@ -1259,7 +1395,7 @@ namespace ANTHRACITE {
 
 				if (i_path.size() == 1) {
 
-					o_foundList += FOUND(i_scopeList - 1, 0, f2_arg, 0, i_prefixed, i_forbidden);
+					o_foundList += FOUND(i_scopeList, 0, f2_arg, 0, i_prefixed, i_forbidden);
 
 				}
 				else if (f2_arg->isBox()) {
@@ -1277,6 +1413,10 @@ namespace ANTHRACITE {
 	}
 
 	LIST<FOUND> SOLVED::find_glob(LIST<EXPR*> i_scopeList, TOKEN& i_glob, LIST<FOUND> i_prefixed, LIST<ARG*> i_forbidden) {
+
+		/*
+			Find a global symbol
+		*/
 
 		LIST<FOUND> o_foundList;
 
@@ -1554,6 +1694,10 @@ namespace ANTHRACITE {
 	}
 
 	ERROR traceLine(SOLVED& i_solved, LINE& i_line, STRING i_message) {
+
+		/*
+			Trace error from a line
+		*/
 
 		return traceToken(*i_solved.parsed->lexed, i_line.section, i_message);
 

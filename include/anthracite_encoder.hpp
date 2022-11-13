@@ -94,6 +94,7 @@ namespace ANTHRACITE {
 			INST SHIFTD(LINE& i_line, BYTE i_mode, BYTE i_op1);
 			INST BT(LINE& i_line, BYTE i_mode, BYTE i_op1);
 			INST BS(LINE& i_line, BYTE i_mode, BYTE i_op1);
+			INST CNT(LINE& i_line, BYTE i_mode, BYTE i_op1);
 			INST ARITH(LINE& i_line, BYTE i_mode, BYTE i_op1);
 			INST MUL(LINE& i_line, BYTE i_mode, BYTE i_op2);
 			INST PUSH(LINE& i_line, BYTE i_mode);
@@ -108,6 +109,7 @@ namespace ANTHRACITE {
 
 			INST TEST(LINE& i_line, BYTE i_mode);
 			INST MOV(LINE& i_line, BYTE i_mode);
+			INST MOVX(LINE& i_line, BYTE i_mode1, BYTE i_mode2, BYTE i_op1);
 			INST XCHG(LINE& i_line, BYTE i_mode);
 
 			INST LEA(LINE& i_line);
@@ -119,6 +121,7 @@ namespace ANTHRACITE {
 			INST FALIGN(LINE& i_line);
 
 			INST FILE(LINE& i_line);
+			INST SPACE(LINE& i_line);
 			INST STR(LINE& i_line);
 			INST B(LINE& i_line);
 			INST W(LINE& i_line);

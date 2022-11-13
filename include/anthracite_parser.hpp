@@ -137,7 +137,7 @@ namespace ANTHRACITE {
 			BLOCK			parse_block(TOKEN*& i_token);
 			LIST<LIST<ARG>>	parse_args(TOKEN*& i_token, BYTE i_defMode = 2);
 			LIST<TOKEN>		parse_path(TOKEN*& i_token);
-			LIST<LIST<ARG>>	parse_sym(TOKEN*& i_token);
+			LIST<LIST<ARG>>	parse_mem(TOKEN*& i_token);
 			LIST<LIST<ARG>>	parse_val(TOKEN*& i_token);
 
 			VOID next(TOKEN*& i_token);
