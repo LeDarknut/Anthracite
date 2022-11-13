@@ -1,0 +1,14 @@
+<link:kernel32.lib>
+<print>
+
+DEBUG {
+
+	ERROR(&c ?: &4) ? &c {
+	
+		&4->CALL($['GetLastError']);
+
+		.DWORD.PRINT_LN(%10);
+	
+	}
+
+}

@@ -1,0 +1,1425 @@
+<console>
+
+PRINT {
+	
+    $text : 
+    &0->STRING("00000000000000000000000000000000000000000000000000000000000000000000\n");
+
+	%b : %13;
+	%c : %0;
+	%s : %5;
+	%f : %1;
+	%po : %0;
+	%radix : %4;
+	$char : $[ABS:%b, %c * 1];
+
+	LOAD_B(%num|$num|#num, %f, &c) &c {
+	
+		&c->MOV_B(%f, %num);
+		&c->MOV_B(%f, $num);
+		&c->MOV_B(%f, #num);
+	
+	}
+
+	LOAD_BW(%num|$num|#num, %f, &c) &c {
+	
+		&c->MOV_W(%f, 0);
+		&c->MOV_B(%f, %num);
+		&c->MOV_B(%f, $num);
+		&c->MOV_B(%f, #num);
+	
+	}
+
+	LOAD_W(%num|$num|#num, %f, &c) &c {
+	
+		&c->MOV_W(%f, %num);
+		&c->MOV_W(%f, $num);
+		&c->MOV_W(%f, #num);
+	
+	}
+
+	LOAD_D(%num|$num|#num, %f, &c) &c {
+	
+		&c->MOV_D(%f, %num);
+		&c->MOV_D(%f, $num);
+		&c->MOV_D(%f, #num);
+	
+	}
+
+	LOAD_Q(%num|$num|#num, %f, &c) &c {
+	
+		&c->MOV_Q(%f, %num);
+		&c->MOV_Q(%f, $num);
+		&c->MOV_Q(%f, #num);
+	
+	}
+
+	FRACTION_LENGTH_W(#fp, %f, &c) &c {
+	
+		&c->CMP_W(%f, 0);
+		&c->CJMP_NE($scan_length);
+		&c->MOV_W(.PRINT->%po, 1);
+		&c->JMP($scan_length_end);
+
+		$scan_length :
+
+		&c->BSF_W(.PRINT->%po, %f);
+		&c->NEG_W(.PRINT->%po);
+		&c->ADD_W(.PRINT->%po, #fp);
+		&c->CMP_W(.PRINT->%po, 1);
+		&c->CJMP_GE($scan_length_end);
+		&c->MOV_W(.PRINT->%po, 1);
+
+		$scan_length_end :
+
+		&c->NOP();
+	
+	}
+
+	FRACTION_LENGTH_D(#fp, %f, &c) &c {
+	
+		&c->CMP_D(%f, 0);
+		&c->CJMP_NE($scan_length);
+		&c->MOV_D(.PRINT->%po, 1);
+		&c->JMP($scan_length_end);
+
+		$scan_length :
+
+		&c->BSF_D(.PRINT->%po, %f);
+		&c->NEG_D(.PRINT->%po);
+		&c->ADD_D(.PRINT->%po, #fp);
+		&c->CMP_D(.PRINT->%po, 1);
+		&c->CJMP_GE($scan_length_end);
+		&c->MOV_D(.PRINT->%po, 1);
+
+		$scan_length_end :
+
+		&c->NOP();
+	
+	}
+
+	FRACTION_LENGTH_Q(#fp, %f, &c) &c {
+	
+		&c->CMP_Q(%f, 0);
+		&c->CJMP_NE($scan_length);
+		&c->MOV_D(.PRINT->%po, 1);
+		&c->JMP($scan_length_end);
+
+		$scan_length :
+
+		&c->BSF_Q(.PRINT->%po, %f);
+		&c->NEG_Q(.PRINT->%po);
+		&c->ADD_Q(.PRINT->%po, #fp);
+		&c->CMP_Q(.PRINT->%po, 1);
+		&c->CJMP_GE($scan_length_end);
+		&c->MOV_D(.PRINT->%po, 1);
+
+		$scan_length_end :
+
+		&c->NOP();
+	
+	}
+
+	STORE_SIGN_B(%f, &c) {
+	
+		&c->MOV_B(.PRINT->%s, "+");
+		&c->TEST_B(%f, %f);
+		&c->CJMP_NS($comp_sign_end);
+		&c->MOV_B(.PRINT->%s, "-");
+		&c->NEG_B(%f);
+
+		$comp_sign_end :
+
+		&c->NOP();
+
+	}
+
+	STORE_SIGN_W(%f, &c) {
+	
+		&c->MOV_B(.PRINT->%s, "+");
+		&c->TEST_W(%f, %f);
+		&c->CJMP_NS($comp_sign_end);
+		&c->MOV_B(.PRINT->%s, "-");
+		&c->NEG_W(%f);
+
+		$comp_sign_end :
+
+		&c->NOP();
+
+	}
+
+	STORE_SIGN_D(%f, &c) {
+	
+		&c->MOV_B(.PRINT->%s, "+");
+		&c->TEST_D(%f, %f);
+		&c->CJMP_NS($comp_sign_end);
+		&c->MOV_B(.PRINT->%s, "-");
+		&c->NEG_D(%f);
+
+		$comp_sign_end :
+
+		&c->NOP();
+
+	}
+
+	STORE_SIGN_Q(%f, &c) {
+	
+		&c->MOV_B(.PRINT->%s, "+");
+		&c->TEST_Q(%f, %f);
+		&c->CJMP_NS($comp_sign_end);
+		&c->MOV_B(.PRINT->%s, "-");
+		&c->NEG_Q(%f);
+
+		$comp_sign_end :
+
+		&c->NOP();
+
+	}
+
+	FRACTION_EXTRACT_B(#fp, %f, &c) &c {
+	
+		&c->MOV_W(%10, 0);
+		&c->SHRD_W(%10, .PRINT->%f, #fp);
+		&c->SHR_W(%10, 8);
+		&c->SHR_B(.PRINT->%f, #fp);
+	
+	}
+
+	FRACTION_EXTRACT_W(#fp, %f, &c) &c {
+	
+		&c->MOV_W(%10, 0);
+		&c->SHRD_W(%10, .PRINT->%f, #fp);
+		&c->SHR_W(.PRINT->%f, #fp);
+	
+	}
+
+	FRACTION_EXTRACT_D(#fp, %f, &c) &c {
+	
+		&c->MOV_D(%10, 0);
+		&c->SHRD_D(%10, .PRINT->%f, #fp);
+		&c->SHR_D(.PRINT->%f, #fp);
+	
+	}
+
+	FRACTION_EXTRACT_Q(#fp, %f, &c) &c {
+	
+		&c->MOV_Q(%10, 0);
+		&c->SHRD_Q(%10, .PRINT->%f, #fp);
+		&c->SHR_Q(.PRINT->%f, #fp);
+	
+	}
+
+	FRACTION_INIT_CURSOR_B(&c) &c {
+	
+		&c->LEA(.PRINT->%b, .PRINT->$text);
+		&c->MOV_D(.PRINT->%c, 67);
+		&c->SUB_D(.PRINT->%c, .PRINT->%po);
+		&c->MOV_B(.PRINT->%radix, 10);
+
+		&c->MOV_B(.PRINT->$char, ".");
+		&c->ADD_D(.PRINT->%c, 1);
+		
+	}
+
+	FRACTION_INIT_CURSOR_W(&c) &c {
+	
+		&c->LEA(.PRINT->%b, .PRINT->$text);
+		&c->MOV_D(.PRINT->%c, 67);
+		&c->SUB_D(.PRINT->%c, .PRINT->%po);
+		&c->MOV_W(.PRINT->%radix, 10);
+
+		&c->MOV_B(.PRINT->$char, ".");
+		&c->ADD_D(.PRINT->%c, 1);
+		
+	}
+
+	FRACTION_INIT_CURSOR_D(&c) &c {
+	
+		&c->LEA(.PRINT->%b, .PRINT->$text);
+		&c->MOV_D(.PRINT->%c, 67);
+		&c->SUB_D(.PRINT->%c, .PRINT->%po);
+		&c->MOV_D(.PRINT->%radix, 10);
+
+		&c->MOV_B(.PRINT->$char, ".");
+		&c->ADD_D(.PRINT->%c, 1);
+		
+	}
+
+	FRACTION_REINIT_CURSOR_B(%f, &c) &c {
+	
+		&c->MOV_D(.PRINT->%c, 66);
+		&c->SUB_D(.PRINT->%c, .PRINT->%po);
+		&c->MOV_B(%10, %f);
+	
+	}
+
+	FRACTION_REINIT_CURSOR_W(%f, &c) &c {
+	
+		&c->MOV_D(.PRINT->%c, 66);
+		&c->SUB_D(.PRINT->%c, .PRINT->%po);
+		&c->MOV_W(%10, %f);
+	
+	}
+
+	FRACTION_REINIT_CURSOR_D(%f, &c) &c {
+	
+		&c->MOV_D(.PRINT->%c, 66);
+		&c->SUB_D(.PRINT->%c, .PRINT->%po);
+		&c->MOV_D(%10, %f);
+	
+	}
+
+	FRACTION_REINIT_CURSOR_Q(%f, &c) &c {
+	
+		&c->MOV_D(.PRINT->%c, 66);
+		&c->SUB_D(.PRINT->%c, .PRINT->%po);
+		&c->MOV_Q(%10, %f);
+	
+	}
+
+	INTEGER_INIT_CURSOR_B(&c) &c {
+	
+		&c->LEA(.PRINT->%b, .PRINT->$text);
+		&c->MOV_D(.PRINT->%c, 67);
+		&c->MOV_B(.PRINT->%radix, 10);
+	
+	}
+
+	INTEGER_INIT_CURSOR_W(&c) &c {
+	
+		&c->LEA(.PRINT->%b, .PRINT->$text);
+		&c->MOV_D(.PRINT->%c, 67);
+		&c->MOV_W(.PRINT->%radix, 10);
+	
+	}
+
+	INTEGER_INIT_CURSOR_D(&c) &c {
+	
+		&c->LEA(.PRINT->%b, .PRINT->$text);
+		&c->MOV_D(.PRINT->%c, 67);
+		&c->MOV_D(.PRINT->%radix, 10);
+	
+	}
+
+	FRACTION_PART_B(&c) &c {
+	
+		$fr_dg_loop :
+
+		&c->MUL_B(.PRINT->%radix);
+		&c->ADD_B(%12, "0");
+		&c->MOV_B(.PRINT->$char, %12);
+		&c->ADD_D(.PRINT->%c, 1);
+		&c->CMP_B(%10, 0);
+		&c->CJMP_A($fr_dg_loop);
+	
+	}
+
+	FRACTION_PART_W(&c) &c {
+	
+		$fr_dg_loop :
+
+		&c->MUL_W(.PRINT->%radix);
+		&c->ADD_B(%12, "0");
+		&c->MOV_B(.PRINT->$char, %12);
+		&c->ADD_D(.PRINT->%c, 1);
+		&c->CMP_W(%10, 0);
+		&c->CJMP_A($fr_dg_loop);
+	
+	}
+
+	FRACTION_PART_D(&c) &c {
+	
+		$fr_dg_loop :
+
+		&c->MUL_D(.PRINT->%radix);
+		&c->ADD_B(%12, "0");
+		&c->MOV_B(.PRINT->$char, %12);
+		&c->ADD_D(.PRINT->%c, 1);
+		&c->CMP_D(%10, 0);
+		&c->CJMP_A($fr_dg_loop);
+	
+	}
+	
+	FRACTION_PART_Q(&c) &c {
+	
+		$fr_dg_loop :
+
+		&c->MUL_Q(.PRINT->%radix);
+		&c->ADD_B(%12, "0");
+		&c->MOV_B(.PRINT->$char, %12);
+		&c->ADD_D(.PRINT->%c, 1);
+		&c->CMP_Q(%10, 0);
+		&c->CJMP_A($fr_dg_loop);
+	
+	}
+
+	INTEGER_PART_B(&c) &c {
+	
+		$int_dg_loop :
+
+		&c->DIV_B(.PRINT->%radix);
+		&c->ADD_B(%12, "0");
+		&c->MOV_B(.PRINT->$char, %12);
+		&c->SUB_D(.PRINT->%c, 1);
+		&c->CMP_B(%10, 0);
+		&c->CJMP_A($int_dg_loop);
+	
+	}
+
+	INTEGER_PART_W(&c) &c {
+	
+		$int_dg_loop :
+
+		&c->DIV_W(.PRINT->%radix);
+		&c->ADD_B(%12, "0");
+		&c->MOV_B(.PRINT->$char, %12);
+		&c->SUB_D(.PRINT->%c, 1);
+		&c->CMP_W(%10, 0);
+		&c->CJMP_A($int_dg_loop);
+	
+	}
+
+	INTEGER_PART_D(&c) &c {
+	
+		$int_dg_loop :
+
+		&c->DIV_D(.PRINT->%radix);
+		&c->ADD_B(%12, "0");
+		&c->MOV_B(.PRINT->$char, %12);
+		&c->SUB_D(.PRINT->%c, 1);
+		&c->CMP_D(%10, 0);
+		&c->CJMP_A($int_dg_loop);
+	
+	}
+	
+	INTEGER_PART_Q(&c) &c {
+	
+		$int_dg_loop :
+
+		&c->DIV_Q(.PRINT->%radix);
+		&c->ADD_B(%12, "0");
+		&c->MOV_B(.PRINT->$char, %12);
+		&c->SUB_D(.PRINT->%c, 1);
+		&c->CMP_Q(%10, 0);
+		&c->CJMP_A($int_dg_loop);
+	
+	}
+
+	SIGN(&c) &c {
+	
+		&c->MOV_B(.PRINT->$char, .PRINT->%s);
+		&c->SUB_D(.PRINT->%c, 1);
+	
+	}
+
+	LENGTH(&c) &c {
+	
+		&c->ADD_Q(.PRINT->%b, .PRINT->%c);
+		&c->ADD_Q(.PRINT->%b, 1);
+		&c->NEG_D(.PRINT->%c);
+		&c->ADD_D(.PRINT->%c, 67);
+		
+	}
+
+	LENGTH_LN(&c) &c {
+	
+		&c->ADD_Q(.PRINT->%b, .PRINT->%c);
+		&c->ADD_Q(.PRINT->%b, 1);
+		&c->NEG_D(.PRINT->%c);
+		&c->ADD_D(.PRINT->%c, 68);
+		
+	}
+
+}
+
+BYTE {
+
+	PRINT(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_B(%num|$num|#num, %10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_B(&c);
+
+		.PRINT.INTEGER_PART_B(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp! : 8, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_BW(%num|$num|#num, %10, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_B(&c);
+
+		.PRINT.FRACTION_PART_B(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_B(%10, &c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_BW(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_B(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_B(&c);
+
+		.PRINT.FRACTION_PART_B(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_B(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_B(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_B(%num|$num|#num, %10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_B(&c);
+
+		.PRINT.INTEGER_PART_B(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp! : 8, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_BW(%num|$num|#num, %10, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_B(&c);
+
+		.PRINT.FRACTION_PART_B(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_B(%10, &c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_BW(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_B(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_B(&c);
+
+		.PRINT.FRACTION_PART_B(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_B(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_B(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+}
+
+WORD {
+
+	PRINT(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, %10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_W(&c);
+
+		.PRINT.INTEGER_PART_W(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp! : 16, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, %10, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_W(&c);
+
+		.PRINT.FRACTION_PART_W(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_W(%10, &c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_W(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_W(&c);
+
+		.PRINT.FRACTION_PART_W(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_W(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_W(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, %10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_W(&c);
+
+		.PRINT.INTEGER_PART_W(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp! : 16, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, %10, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_W(&c);
+
+		.PRINT.FRACTION_PART_W(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_W(%10, &c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_W(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_W(&c);
+
+		.PRINT.FRACTION_PART_W(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_W(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_W(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+}
+
+DWORD {
+
+	PRINT(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, %10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_D(&c);
+
+		.PRINT.INTEGER_PART_D(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp! : 32, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, %10, &c);
+
+		.PRINT.FRACTION_LENGTH_D(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_D(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_D(%10, &c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_D(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_D(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_D(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_D(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_D(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, %10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_D(&c);
+
+		.PRINT.INTEGER_PART_D(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp! : 32, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, %10, &c);
+
+		.PRINT.FRACTION_LENGTH_D(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_D(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_D(%10, &c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_D(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_D(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_D(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_D(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_D(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+}
+
+QWORD {
+
+	PRINT(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, %10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_D(&c);
+
+		.PRINT.INTEGER_PART_Q(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp! : 64, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, %10, &c);
+
+		.PRINT.FRACTION_LENGTH_Q(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_Q(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_Q(%10, &c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_Q(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_Q(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_Q(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_Q(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_Q(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, %10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_D(&c);
+
+		.PRINT.INTEGER_PART_Q(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp! : 64, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, %10, &c);
+
+		.PRINT.FRACTION_LENGTH_Q(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_Q(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_Q(%10, &c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_Q(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_Q(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_Q(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_Q(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_Q(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+}
+
+SBYTE {
+
+	PRINT(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_B(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_B(%10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_B(&c);
+
+		.PRINT.INTEGER_PART_B(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp! : 8, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_BW(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_B(%10, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_B(&c);
+
+		.PRINT.FRACTION_PART_B(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_B(%10, &c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_BW(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.STORE_SIGN_B(.PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_B(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_B(&c);
+
+		.PRINT.FRACTION_PART_B(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_B(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_B(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_B(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_B(%10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_B(&c);
+
+		.PRINT.INTEGER_PART_B(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp! : 8, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_BW(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_B(%10, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_B(&c);
+
+		.PRINT.FRACTION_PART_B(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_B(%10, &c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_BW(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.STORE_SIGN_B(.PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_B(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_B(&c);
+
+		.PRINT.FRACTION_PART_B(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_B(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_B(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+}
+
+SWORD {
+
+	PRINT(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_W(%10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_W(&c);
+
+		.PRINT.INTEGER_PART_W(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp! : 16, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_W(%10, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_W(&c);
+
+		.PRINT.FRACTION_PART_W(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_W(%10, &c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.STORE_SIGN_W(.PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_W(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_W(&c);
+
+		.PRINT.FRACTION_PART_W(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_W(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_W(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_W(%10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_W(&c);
+
+		.PRINT.INTEGER_PART_W(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp! : 16, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_W(%10, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_W(&c);
+
+		.PRINT.FRACTION_PART_W(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_W(%10, &c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_W(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.STORE_SIGN_W(.PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_W(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_W(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_W(&c);
+
+		.PRINT.FRACTION_PART_W(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_W(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_W(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+}
+
+SDWORD {
+
+	PRINT(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_D(%10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_D(&c);
+
+		.PRINT.INTEGER_PART_D(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp! : 32, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_D(%10, &c);
+
+		.PRINT.FRACTION_LENGTH_D(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_D(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_D(%10, &c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.STORE_SIGN_D(.PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_D(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_D(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_D(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_D(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_D(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_D(%10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_D(&c);
+
+		.PRINT.INTEGER_PART_D(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp! : 32, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_D(%10, &c);
+
+		.PRINT.FRACTION_LENGTH_D(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_D(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_D(%10, &c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_D(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.STORE_SIGN_D(.PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_D(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_D(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_D(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_D(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_D(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+}
+
+SQWORD {
+
+	PRINT(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_Q(%10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_D(&c);
+
+		.PRINT.INTEGER_PART_Q(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp! : 64, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_Q(%10, &c);
+
+		.PRINT.FRACTION_LENGTH_Q(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_Q(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_Q(%10, &c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.STORE_SIGN_Q(.PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_Q(#fp, .PRINT->%f, &c);
+
+		.PRINT.FRACTION_EXTRACT_Q(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_Q(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_Q(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_Q(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp?! : 0, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_Q(%10, &c);
+
+		.PRINT.INTEGER_INIT_CURSOR_D(&c);
+
+		.PRINT.INTEGER_PART_Q(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp! : 64, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, %10, &c);
+
+		.PRINT.STORE_SIGN_Q(%10, &c);
+
+		.PRINT.FRACTION_LENGTH_Q(#fp, %10, &c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_Q(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_Q(%10, &c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+	PRINT_LN(%num|$num|#num, #fp, &c ?: &4) ? &c {
+
+		.PRINT.LOAD_Q(%num|$num|#num, .PRINT->%f, &c);
+
+		.PRINT.STORE_SIGN_Q(.PRINT->%f, &c);
+
+		.PRINT.FRACTION_LENGTH_Q(#fp, %10, &c);
+
+		.PRINT.FRACTION_EXTRACT_Q(#fp, .PRINT->%f,&c);
+
+		.PRINT.FRACTION_INIT_CURSOR_D(&c);
+
+		.PRINT.FRACTION_PART_Q(&c);
+
+		.PRINT.FRACTION_REINIT_CURSOR_Q(.PRINT->%f, &c);
+
+		.PRINT.INTEGER_PART_Q(&c);
+
+		.PRINT.SIGN(&c);
+
+		.PRINT.LENGTH_LN(&c);
+
+		.CONSOLE.WRITE(.PRINT->%b, .PRINT->%c, &c);
+	
+	}
+
+}

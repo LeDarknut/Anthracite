@@ -1,0 +1,903 @@
+BYTE {
+
+    ADD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADD_B(%t|$t, %s|#s);
+		&c->ADD_B(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_B(%10, $s);
+			&c->ADD_B($t, %10);
+		
+		}
+
+	}
+
+	ADC(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADC_B(%t|$t, %s|#s);
+		&c->ADC_B(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_B(%10, $s);
+			&c->ADC_B($t, %10);
+		
+		}
+
+	}
+
+	SBB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SBB_B(%t|$t, %s|#s);
+		&c->SBB_B(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_B(%10, $s);
+			&c->SBB_B($t, %10);
+		
+		}
+
+	}
+
+	SUB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SUB_B(%t|$t, %s|#s);
+		&c->SUB_B(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_B(%10, $s);
+			&c->SUB_B($t, %10);
+		
+		}
+
+	}
+
+	CMP(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->CMP_B(%t|$t, %s|#s);
+		&c->CMP_B(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_B(%10, $s);
+			&c->CMP_B($t, %10);
+		
+		}
+
+	}
+
+	MUL(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_B(%10, %t|$t);
+
+		&c->MOV_B(%12, %s|$s|#s);
+
+		&c->MUL_B(%12);
+
+		&c->MOV_B(%t|$t, %10);
+
+	}
+
+	DIV(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_B(%10, %t|$t);
+
+		&c->MOV_B(%11, %s|$s|#s);
+
+		&c->DIV_B(%11);
+
+		&c->MOV_B(%t|$t, %10);
+
+	}
+
+	MOD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_B(%10, %t|$t);
+
+		&c->MOV_B(%11, %s|$s|#s);
+
+		&c->DIV_B(%11);
+
+		&c->MOV_B(%t|$t, %12);
+
+	}
+
+}
+
+WORD {
+
+	ADD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADD_W(%t|$t, %s|#s);
+		&c->ADD_W(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_W(%10, $s);
+			&c->ADD_W($t, %10);
+		
+		}
+
+	}
+
+	ADC(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADC_W(%t|$t, %s|#s);
+		&c->ADC_W(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_W(%10, $s);
+			&c->ADC_W($t, %10);
+		
+		}
+
+	}
+
+	SBB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SBB_W(%t|$t, %s|#s);
+		&c->SBB_W(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_W(%10, $s);
+			&c->SBB_W($t, %10);
+		
+		}
+
+	}
+
+	SUB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SUB_W(%t|$t, %s|#s);
+		&c->SUB_W(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_W(%10, $s);
+			&c->SUB_W($t, %10);
+		
+		}
+
+	}
+
+	CMP(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->CMP_W(%t|$t, %s|#s);
+		&c->CMP_W(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_W(%10, $s);
+			&c->CMP_W($t, %10);
+		
+		}
+
+	}
+
+	MUL(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_W(%10, %t|$t);
+
+		&c->MOV_W(%12, %s|$s|#s);
+
+		&c->MUL_W(%12);
+
+		&c->MOV_W(%t|$t, %10);
+
+	}
+
+	DIV(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_W(%10, %t|$t);
+
+		&c->MOV_W(%11, %s|$s|#s);
+
+		&c->DIV_W(%11);
+
+		&c->MOV_W(%t|$t, %10);
+
+	}
+
+	MOD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_W(%10, %t|$t);
+
+		&c->MOV_W(%11, %s|$s|#s);
+
+		&c->DIV_W(%11);
+
+		&c->MOV_W(%t|$t, %12);
+
+	}
+
+}
+
+DWORD {
+
+	ADD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADD_D(%t|$t, %s|#s);
+		&c->ADD_D(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_D(%10, $s);
+			&c->ADD_D($t, %10);
+		
+		}
+
+	}
+
+	ADC(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADC_D(%t|$t, %s|#s);
+		&c->ADC_D(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_D(%10, $s);
+			&c->ADC_D($t, %10);
+		
+		}
+
+	}
+
+	SBB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SBB_D(%t|$t, %s|#s);
+		&c->SBB_D(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_D(%10, $s);
+			&c->SBB_D($t, %10);
+		
+		}
+
+	}
+
+	SUB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SUB_D(%t|$t, %s|#s);
+		&c->SUB_D(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_D(%10, $s);
+			&c->SUB_D($t, %10);
+		
+		}
+
+	}
+
+	CMP(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->CMP_D(%t|$t, %s|#s);
+		&c->CMP_D(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_D(%10, $s);
+			&c->CMP_D($t, %10);
+		
+		}
+
+	}
+
+	MUL(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_D(%10, %t|$t);
+
+		&c->MOV_D(%12, %s|$s|#s);
+
+		&c->MUL_D(%12);
+
+		&c->MOV_D(%t|$t, %10);
+
+	}
+
+	DIV(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_D(%10, %t|$t);
+
+		&c->MOV_D(%11, %s|$s|#s);
+
+		&c->DIV_D(%11);
+
+		&c->MOV_D(%t|$t, %10);
+
+	}
+
+	MOD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_D(%10, %t|$t);
+
+		&c->MOV_D(%11, %s|$s|#s);
+
+		&c->DIV_D(%11);
+
+		&c->MOV_D(%t|$t, %12);
+
+	}
+
+}
+
+QWORD {
+
+	ADD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADD_Q(%t|$t, %s|#s);
+		&c->ADD_Q(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_Q(%10, $s);
+			&c->ADD_Q($t, %10);
+		
+		}
+
+	}
+
+	ADC(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADC_Q(%t|$t, %s|#s);
+		&c->ADC_Q(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_Q(%10, $s);
+			&c->ADC_Q($t, %10);
+		
+		}
+
+	}
+
+	SBB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SBB_Q(%t|$t, %s|#s);
+		&c->SBB_Q(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_Q(%10, $s);
+			&c->SBB_Q($t, %10);
+		
+		}
+
+	}
+
+	SUB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SUB_Q(%t|$t, %s|#s);
+		&c->SUB_Q(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_Q(%10, $s);
+			&c->SUB_Q($t, %10);
+		
+		}
+
+	}
+
+	CMP(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->CMP_Q(%t|$t, %s|#s);
+		&c->CMP_Q(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_Q(%10, $s);
+			&c->CMP_Q($t, %10);
+		
+		}
+
+	}
+
+	MUL(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_Q(%10, %t|$t);
+
+		&c->MOV_Q(%12, %s|$s|#s);
+
+		&c->MUL_Q(%12);
+
+		&c->MOV_Q(%t|$t, %10);
+
+	}
+
+	DIV(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_Q(%10, %t|$t);
+
+		&c->MOV_Q(%11, %s|$s|#s);
+
+		&c->DIV_Q(%11);
+
+		&c->MOV_Q(%t|$t, %10);
+
+	}
+
+	MOD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_Q(%10, %t|$t);
+
+		&c->MOV_Q(%11, %s|$s|#s);
+
+		&c->DIV_Q(%11);
+
+		&c->MOV_Q(%t|$t, %12);
+
+	}
+
+}
+
+SBYTE {
+
+	NEG(%t|$t, &c? : &4) ? &c {
+	
+		&c->NEG_B(%t|$t);
+	
+	}
+
+    ADD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADD_B(%t|$t, %s|#s);
+		&c->ADD_B(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_B(%10, $s);
+			&c->ADD_B($t, %10);
+		
+		}
+
+	}
+
+	ADC(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADC_B(%t|$t, %s|#s);
+		&c->ADC_B(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_B(%10, $s);
+			&c->ADC_B($t, %10);
+		
+		}
+
+	}
+
+	SBB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SBB_B(%t|$t, %s|#s);
+		&c->SBB_B(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_B(%10, $s);
+			&c->SBB_B($t, %10);
+		
+		}
+
+	}
+
+	SUB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SUB_B(%t|$t, %s|#s);
+		&c->SUB_B(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_B(%10, $s);
+			&c->SUB_B($t, %10);
+		
+		}
+
+	}
+
+	CMP(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->CMP_B(%t|$t, %s|#s);
+		&c->CMP_B(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_B(%10, $s);
+			&c->CMP_B($t, %10);
+		
+		}
+
+	}
+
+	MUL(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_B(%10, %t|$t);
+
+		&c->MOV_B(%12, %s|$s|#s);
+
+		&c->SMUL_B(%12);
+
+		&c->MOV_B(%t|$t, %10);
+
+	}
+
+	DIV(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_B(%10, %t|$t);
+
+		&c->MOV_B(%11, %s|$s|#s);
+
+		&c->SDIV_B(%11);
+
+		&c->MOV_B(%t|$t, %10);
+
+	}
+
+	MOD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_B(%10, %t|$t);
+
+		&c->MOV_B(%11, %s|$s|#s);
+
+		&c->SDIV_B(%11);
+
+		&c->MOV_B(%t|$t, %12);
+
+	}
+
+}
+
+SWORD {
+
+	NEG(%t|$t, &c? : &4) ? &c {
+	
+		&c->NEG_W(%t|$t);
+	
+	}
+
+	ADD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADD_W(%t|$t, %s|#s);
+		&c->ADD_W(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_W(%10, $s);
+			&c->ADD_W($t, %10);
+		
+		}
+
+	}
+
+	ADC(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADC_W(%t|$t, %s|#s);
+		&c->ADC_W(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_W(%10, $s);
+			&c->ADC_W($t, %10);
+		
+		}
+
+	}
+
+	SBB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SBB_W(%t|$t, %s|#s);
+		&c->SBB_W(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_W(%10, $s);
+			&c->SBB_W($t, %10);
+		
+		}
+
+	}
+
+	SUB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SUB_W(%t|$t, %s|#s);
+		&c->SUB_W(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_W(%10, $s);
+			&c->SUB_W($t, %10);
+		
+		}
+
+	}
+
+	CMP(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->CMP_W(%t|$t, %s|#s);
+		&c->CMP_W(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_W(%10, $s);
+			&c->CMP_W($t, %10);
+		
+		}
+
+	}
+
+	MUL(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_W(%10, %t|$t);
+
+		&c->MOV_W(%12, %s|$s|#s);
+
+		&c->SMUL_W(%12);
+
+		&c->MOV_W(%t|$t, %10);
+
+	}
+
+	DIV(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_W(%10, %t|$t);
+
+		&c->MOV_W(%11, %s|$s|#s);
+
+		&c->SDIV_W(%11);
+
+		&c->MOV_W(%t|$t, %10);
+
+	}
+
+	MOD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_W(%10, %t|$t);
+
+		&c->MOV_W(%11, %s|$s|#s);
+
+		&c->SDIV_W(%11);
+
+		&c->MOV_W(%t|$t, %12);
+
+	}
+
+}
+
+SDWORD {
+
+	NEG(%t|$t, &c? : &4) ? &c {
+	
+		&c->NEG_D(%t|$t);
+	
+	}
+
+	ADD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADD_D(%t|$t, %s|#s);
+		&c->ADD_D(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_D(%10, $s);
+			&c->ADD_D($t, %10);
+		
+		}
+
+	}
+
+	ADC(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADC_D(%t|$t, %s|#s);
+		&c->ADC_D(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_D(%10, $s);
+			&c->ADC_D($t, %10);
+		
+		}
+
+	}
+
+	SBB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SBB_D(%t|$t, %s|#s);
+		&c->SBB_D(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_D(%10, $s);
+			&c->SBB_D($t, %10);
+		
+		}
+
+	}
+
+	SUB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SUB_D(%t|$t, %s|#s);
+		&c->SUB_D(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_D(%10, $s);
+			&c->SUB_D($t, %10);
+		
+		}
+
+	}
+
+	CMP(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->CMP_D(%t|$t, %s|#s);
+		&c->CMP_D(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_D(%10, $s);
+			&c->CMP_D($t, %10);
+		
+		}
+
+	}
+
+	MUL(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_D(%10, %t|$t);
+
+		&c->MOV_D(%12, %s|$s|#s);
+
+		&c->SMUL_D(%12);
+
+		&c->MOV_D(%t|$t, %10);
+
+	}
+
+	DIV(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_D(%10, %t|$t);
+
+		&c->MOV_D(%11, %s|$s|#s);
+
+		&c->SDIV_D(%11);
+
+		&c->MOV_D(%t|$t, %10);
+
+	}
+
+	MOD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_D(%10, %t|$t);
+
+		&c->MOV_D(%11, %s|$s|#s);
+
+		&c->SDIV_D(%11);
+
+		&c->MOV_D(%t|$t, %12);
+
+	}
+
+}
+
+SQWORD {
+
+	NEG(%t|$t, &c? : &4) ? &c {
+	
+		&c->NEG_Q(%t|$t);
+	
+	}
+
+	ADD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADD_Q(%t|$t, %s|#s);
+		&c->ADD_Q(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_Q(%10, $s);
+			&c->ADD_Q($t, %10);
+		
+		}
+
+	}
+
+	ADC(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->ADC_Q(%t|$t, %s|#s);
+		&c->ADC_Q(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_Q(%10, $s);
+			&c->ADC_Q($t, %10);
+		
+		}
+
+	}
+
+	SBB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SBB_Q(%t|$t, %s|#s);
+		&c->SBB_Q(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_Q(%10, $s);
+			&c->SBB_Q($t, %10);
+		
+		}
+
+	}
+
+	SUB(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->SUB_Q(%t|$t, %s|#s);
+		&c->SUB_Q(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_Q(%10, $s);
+			&c->SUB_Q($t, %10);
+		
+		}
+
+	}
+
+	CMP(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->CMP_Q(%t|$t, %s|#s);
+		&c->CMP_Q(%t, $s);
+
+		IF($t:$t, $s:$s, &c:&c) {
+		
+			&c->MOV_Q(%10, $s);
+			&c->CMP_Q($t, %10);
+		
+		}
+
+	}
+
+	MUL(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_Q(%10, %t|$t);
+
+		&c->MOV_Q(%12, %s|$s|#s);
+
+		&c->SMUL_Q(%12);
+
+		&c->MOV_Q(%t|$t, %10);
+
+	}
+
+	DIV(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_Q(%10, %t|$t);
+
+		&c->MOV_Q(%11, %s|$s|#s);
+
+		&c->SDIV_Q(%11);
+
+		&c->MOV_Q(%t|$t, %10);
+
+	}
+
+	MOD(%t|$t, %s|$s|#s, &c? : &4) ? &c {
+
+		&c->MOV_Q(%10, %t|$t);
+
+		&c->MOV_Q(%11, %s|$s|#s);
+
+		&c->SDIV_Q(%11);
+
+		&c->MOV_Q(%t|$t, %12);
+
+	}
+
+}
